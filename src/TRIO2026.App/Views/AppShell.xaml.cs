@@ -25,6 +25,7 @@ public partial class AppShell : Window
     private readonly UvConfigService _uvConfigService;
     private readonly IUvHardwareService _uvHardwareService;
     private readonly SystemSettingService _systemSettings;
+    private readonly IdleTimerService _idleTimer = new();
 
     // 頁面實例（預先建立，hide/show 切換）
     private LoginPage? _loginPage;
@@ -109,6 +110,10 @@ public partial class AppShell : Window
     {
         var fromPage = _currentPage;
         _currentPage = page;
+
+        // 通知舊頁面即將離開
+        if (fromPage == "uv" && _uvPage != null)
+            _uvPage.OnNavigatingFrom(page);
 
         // 操作追蹤：頁面導航
         EventLogService.Instance.LogNavigation(fromPage, page);
@@ -240,6 +245,7 @@ public partial class AppShell : Window
                     user.Username, true, "Password changed, forcing re-login");
 
                 await ApplyLoginScreenLanguageAsync();
+                _idleTimer.Stop();
                 _sessionService.ClearSession();
                 _loginPage = null;
                 NavigateTo("login");
@@ -248,6 +254,7 @@ public partial class AppShell : Window
             // 如果取消（理論上不應發生，因為 isForced=true 隱藏了取消按鈕）
             // 但安全起見，強制登出
             await ApplyLoginScreenLanguageAsync();
+            _idleTimer.Stop();
             _sessionService.ClearSession();
             NavigateTo("login");
             return;
@@ -265,6 +272,9 @@ public partial class AppShell : Window
             _menuPage = null;
             NavigateTo("menu");
         }
+
+        // ── 啟動閒置計時器（Guest 不啟動）──
+        StartIdleTimerIfNeeded();
     }
 
     private void OnInitCompleted(object? sender, EventArgs e)
@@ -356,5 +366,183 @@ public partial class AppShell : Window
         }
 
         await LocalizationService.Instance.SwitchLanguageAsync(targetLang);
+    }
+
+    // ═══════ Session Lock / Idle Timer ═══════
+
+    /// <summary>根據設定啟動閒置計時器（Guest / GuestMode 不啟動）</summary>
+    private void StartIdleTimerIfNeeded()
+    {
+        // Guest 不需要 timeout
+        if (_sessionService.IsGuestLogin || _sessionService.IsGuestMode) return;
+
+        var timeoutMin = _systemSettings.SessionTimeoutMinutes;
+        if (timeoutMin <= 0) return;
+
+        // 掛載事件
+        _idleTimer.WarningTriggered -= OnIdleWarning;
+        _idleTimer.TimeoutTriggered -= OnIdleTimeout;
+        _idleTimer.CountdownTick -= OnCountdownTick;
+        _idleTimer.TimerReset -= OnTimerReset;
+        _idleTimer.WarningTriggered += OnIdleWarning;
+        _idleTimer.TimeoutTriggered += OnIdleTimeout;
+        _idleTimer.CountdownTick += OnCountdownTick;
+        _idleTimer.TimerReset += OnTimerReset;
+
+        _idleTimer.Start(timeoutMin, _systemSettings.SessionTimeoutWarningSeconds);
+
+        // 初始顯示倒數
+        UpdateCountdownDisplay(timeoutMin * 60);
+    }
+
+    private void OnIdleWarning(object? sender, int remainingSeconds)
+    {
+        // 倒數警告（使用非阻塞 toast — 暫以 Title 顯示）
+        var msg = string.Format(
+            LocalizationService.Instance["Lock.TimeoutWarning"],
+            remainingSeconds);
+        Dispatcher.Invoke(() => Title = $"TRIO2026 — {msg}");
+    }
+
+    private async void OnIdleTimeout(object? sender, EventArgs e)
+    {
+        await Dispatcher.InvokeAsync(async () =>
+        {
+            var action = _systemSettings.SessionTimeoutAction;
+            if (action == "logout")
+            {
+                // 完整登出
+                EventLogService.Instance?.LogInfo("Auth", "AppShell",
+                    ErrorCodes.SessionLocked, "Session Timeout - Logout",
+                    $"User={_sessionService.CurrentUser?.Username}");
+                await ApplyLoginScreenLanguageAsync();
+                _idleTimer.Stop();
+                _sessionService.ClearSession();
+                _loginPage = null;
+                NavigateTo("login");
+            }
+            else
+            {
+                // 鎖定畫面
+                await HandleLockScreenAsync();
+            }
+        });
+    }
+
+    private async Task HandleLockScreenAsync()
+    {
+        var user = _sessionService.CurrentUser;
+        if (user == null) return;
+
+        _sessionService.LockSession();
+        Title = "TRIO2026";
+
+        EventLogService.Instance?.LogInfo("Auth", "AppShell",
+            ErrorCodes.SessionLocked, "Session Locked",
+            $"User={user.Username}, TimeoutMin={_systemSettings.SessionTimeoutMinutes}");
+
+        var result = await LockScreenHost.ShowAsync(
+            user, _sessionService.LockedAt ?? DateTime.Now,
+            _authService, _systemSettings);
+
+        if (result == Controls.LockScreenResult.SwitchUser)
+        {
+            // 切換使用者 → 完整登出
+            _sessionService.UnlockSession();
+            await ApplyLoginScreenLanguageAsync();
+            _idleTimer.Stop();
+            _sessionService.ClearSession();
+            _loginPage = null;
+            NavigateTo("login");
+        }
+        else
+        {
+            // 解鎖成功
+            _sessionService.UnlockSession();
+            StartIdleTimerIfNeeded(); // 重新啟動 timer
+
+            // 處理鎖定期間累積的訊息
+            await ProcessPendingMessagesAsync();
+        }
+    }
+
+    /// <summary>處理鎖定期間累積的待處理訊息</summary>
+    private async Task ProcessPendingMessagesAsync()
+    {
+        while (_sessionService.HasPendingMessages)
+        {
+            var msg = _sessionService.DequeueMessage();
+            if (msg == null) break;
+
+            await DialogOverlay.ShowAsync(
+                msg.Title, msg.Message,
+                LocalizationService.Instance["Common.OK"],
+                OverlayDialogIcon.Info);
+        }
+    }
+
+    /// <summary>暫停閒置計時器（UV 等長時間流程呼叫）</summary>
+    public void PauseIdleTimer() => _idleTimer.Pause();
+
+    /// <summary>恢復閒置計時器</summary>
+    public void ResumeIdleTimer() => _idleTimer.Resume();
+
+    /// <summary>取得 LockScreen Overlay 參考（供 UV 頁面穿透訊息使用）</summary>
+    public Controls.LockScreenOverlay LockScreen => LockScreenHost;
+
+    // ═══════ Session Countdown Display ═══════
+
+    private void OnCountdownTick(object? sender, int remainingSeconds)
+    {
+        Dispatcher.Invoke(() => UpdateCountdownDisplay(remainingSeconds));
+    }
+
+    private void OnTimerReset(object? sender, EventArgs e)
+    {
+        Dispatcher.Invoke(() => UpdateCountdownDisplay(_idleTimer.RemainingSeconds));
+    }
+
+    /// <summary>更新當前頁面的底部列倒數顯示</summary>
+    private void UpdateCountdownDisplay(int remainingSeconds)
+    {
+        if (!_systemSettings.SessionTimeoutCountdownVisible)
+        {
+            SetPageCountdownVisibility(false, "");
+            return;
+        }
+
+        var minutes = remainingSeconds / 60;
+        var seconds = remainingSeconds % 60;
+        var timeStr = $"{minutes:D2}:{seconds:D2}";
+        var loc = LocalizationService.Instance;
+        var text = string.Format(loc["Lock.CountdownLabel"], timeStr);
+
+        SetPageCountdownVisibility(true, text);
+    }
+
+    /// <summary>尋找當前頁面的 CountdownText 並更新</summary>
+    private void SetPageCountdownVisibility(bool visible, string text)
+    {
+        // MenuPage
+        if (PageHost.Content is Pages.MenuPage menuPage)
+        {
+            var tb = menuPage.FindName("CountdownText") as System.Windows.Controls.TextBlock;
+            if (tb != null)
+            {
+                tb.Text = text;
+                tb.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        // UvDecontaminationPage
+        if (PageHost.Content is Pages.UvDecontaminationPage uvPage)
+        {
+            var tb = uvPage.FindName("CountdownText") as System.Windows.Controls.TextBlock;
+            if (tb != null)
+            {
+                tb.Text = text;
+                tb.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
     }
 }

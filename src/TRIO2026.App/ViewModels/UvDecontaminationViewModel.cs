@@ -249,7 +249,8 @@ public class UvDecontaminationViewModel : ViewModelBase
             SelectedIndex--;
             RemainingSeconds = SelectedOption?.DurationSeconds ?? 0;
             EventLogService.Instance.LogUvAction("DurationChanged",
-                $"Duration={SelectedOption?.DurationSeconds}s, Label={SelectedDisplayLabel}");
+                $"Duration={SelectedOption?.DurationSeconds}s, Label={SelectedDisplayLabel}",
+                ErrorCodes.UvDurationChanged);
         }
     }
 
@@ -260,7 +261,8 @@ public class UvDecontaminationViewModel : ViewModelBase
             SelectedIndex++;
             RemainingSeconds = SelectedOption?.DurationSeconds ?? 0;
             EventLogService.Instance.LogUvAction("DurationChanged",
-                $"Duration={SelectedOption?.DurationSeconds}s, Label={SelectedDisplayLabel}");
+                $"Duration={SelectedOption?.DurationSeconds}s, Label={SelectedDisplayLabel}",
+                ErrorCodes.UvDurationChanged);
         }
     }
 
@@ -285,6 +287,9 @@ public class UvDecontaminationViewModel : ViewModelBase
 
             if (IsDoorOpen)
             {
+                EventLogService.Instance.LogUvAction("StartBlockedByDoor",
+                    $"SelectedDuration={SelectedOption?.DurationSeconds}s",
+                    ErrorCodes.UvStartBlockedByDoor);
                 StartBlockedByDoor?.Invoke(this, EventArgs.Empty);
                 return;
             }
@@ -350,7 +355,9 @@ public class UvDecontaminationViewModel : ViewModelBase
                 RemainingSeconds = SelectedOption.DurationSeconds;
 
             CountdownCompleted?.Invoke(this, EventArgs.Empty);
-            EventLogService.Instance.LogUvAction("Complete", null, ErrorCodes.UvComplete);
+            EventLogService.Instance.LogUvAction("Complete",
+                $"ActualDuration={SelectedOption?.DurationSeconds}s",
+                ErrorCodes.UvComplete);
         }
     }
 
@@ -382,7 +389,8 @@ public class UvDecontaminationViewModel : ViewModelBase
         {
             DoorResumed?.Invoke(this, EventArgs.Empty);
             EventLogService.Instance.LogUvAction("DoorResumed",
-                $"RemainingSeconds={RemainingSeconds}");
+                $"RemainingSeconds={RemainingSeconds}",
+                ErrorCodes.UvDoorResumed);
 
             _timer.Start(); // 恢復倒數
         }

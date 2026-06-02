@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using TRIO2026.App.Controls;
 using TRIO2026.App.Services;
 using TRIO2026.App.ViewModels;
+using TRIO2026.Core;
 
 namespace TRIO2026.App.Views.Pages;
 
@@ -66,6 +67,9 @@ public partial class UvDecontaminationPage : UserControl
     {
         try
         {
+            EventLogService.Instance.LogUvAction("PageEnter",
+                $"FromPage={fromPage ?? "null"}", ErrorCodes.UvPageEnter);
+
             if (!_initialized)
             {
                 await _viewModel.InitializeAsync();
@@ -80,6 +84,14 @@ public partial class UvDecontaminationPage : UserControl
         {
             Console.WriteLine($"[UvPage] OnNavigatedTo 失敗: {ex.Message}");
         }
+    }
+
+    /// <summary>離開頁面時記錄日誌</summary>
+    public void OnNavigatingFrom(string? toPage)
+    {
+        EventLogService.Instance.LogUvAction("PageLeave",
+            $"ToPage={toPage ?? "null"}, IsRunning={_viewModel.IsRunning}",
+            ErrorCodes.UvPageLeave);
     }
 
     /// <summary>倒數結束 — 自動關閉停止確認視窗（若開啟中），並顯示完成提示</summary>
@@ -105,6 +117,9 @@ public partial class UvDecontaminationPage : UserControl
                     "✅");
                 // 清除工作狀態顯示
                 shell.LockScreen.UpdateWorkStatus(null);
+                // 補充日誌：鎖定中完成
+                EventLogService.Instance.LogUvAction("CompleteDuringLock",
+                    "LockedScreen=true", ErrorCodes.UvComplete);
             }
             else
             {

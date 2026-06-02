@@ -40,6 +40,11 @@ public static class ErrorCodes
     public const string UvDoorInterrupted = "ERR-3004"; // 門板中斷 — Error 等級（需 CFS 回報）
     public const string UvLampFailure = "ERR-3005";
     public const string UvConfigLoadFailure = "ERR-3006";
+    public const string UvStartBlockedByDoor = "WRN-3007"; // 門板開啟時嘗試啟動 UV
+    public const string UvDoorResumed = "INF-3008";         // 門板關閉，UV 恢復照射
+    public const string UvDurationChanged = "INF-3009";     // 使用者切換照射時長
+    public const string UvPageEnter = "INF-3010";           // 進入 UV 頁面
+    public const string UvPageLeave = "INF-3011";           // 離開 UV 頁面
 
     // ── 4xxx Hardware ──
     public const string HardwareCommunicationFailure = "ERR-4001";
@@ -70,4 +75,9 @@ public static class ErrorCodes
     public const string GuestNavigationBlocked = "WRN-9003";
     public const string GuestRestrictionApplied = "INF-9004";
     public const string SystemAccountGuard = "WRN-9005";
+    public const string SessionLocked = "INF-9006";
+    public const string SessionUnlocked = "INF-9007";
+    public const string LockInvalidPassword = "WRN-9008";
+    public const string LockSwitchUser = "INF-9009";
+    public const string LockPassthroughMsg = "INF-9010";
 }

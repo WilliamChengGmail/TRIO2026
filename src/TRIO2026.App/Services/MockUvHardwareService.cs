@@ -99,7 +99,7 @@ public class MockUvHardwareService : IUvHardwareService, IDisposable
         }
     }
 
-    private async Task SendCommandAsync(string command)
+    private async Task SendCommandAsync(string command, string? extraJson = null)
     {
         if (_client == null || !_client.Connected || _stream == null)
         {
@@ -109,7 +109,11 @@ public class MockUvHardwareService : IUvHardwareService, IDisposable
 
         try
         {
-            var json = $"{{\"Command\": \"{command}\"}}\n";
+            string json;
+            if (extraJson != null)
+                json = $"{{\"Command\": \"{command}\", {extraJson}}}\n";
+            else
+                json = $"{{\"Command\": \"{command}\"}}\n";
             var bytes = Encoding.UTF8.GetBytes(json);
             await _stream.WriteAsync(bytes, 0, bytes.Length);
         }
@@ -119,10 +123,10 @@ public class MockUvHardwareService : IUvHardwareService, IDisposable
         }
     }
 
-    public async Task<bool> StartUvLampAsync()
+    public async Task<bool> StartUvLampAsync(int durationSeconds)
     {
-        Debug.WriteLine("[MockUV] 請求啟動 UV 燈");
-        await SendCommandAsync("StartUV");
+        Debug.WriteLine($"[MockUV] 請求啟動 UV 燈 (Duration={durationSeconds}s)");
+        await SendCommandAsync("StartUV", $"\"Duration\": {durationSeconds}");
         return true;
     }
 

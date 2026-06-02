@@ -2,11 +2,14 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:svc="clr-namespace:TRIO2026.App.Services"
-             Visibility="Collapsed">
+             Visibility="Collapsed"
+             KeyboardNavigation.TabNavigation="None"
+             PreviewKeyDown="OnPreviewKeyDown">
 
     <UserControl.Resources>
         <!-- 一般字元按鈕 — 觸控優化，無 Hover -->
         <Style x:Key="CharKey" TargetType="Button">
+            <Setter Property="Focusable" Value="False" />
             <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontFamily" Value="Consolas" />
@@ -37,6 +40,7 @@
 
         <!-- 功能按鈕（Shift / 符號切換 / 退格 / 空白 / 確認 / 取消） -->
         <Style x:Key="FuncKey" TargetType="Button">
+            <Setter Property="Focusable" Value="False" />
             <Setter Property="FontSize" Value="17" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontFamily" Value="Segoe UI" />
@@ -113,7 +117,7 @@
                             <Button x:Name="EyeToggle" Grid.Column="1"
                                     Content="👁" FontSize="18"
                                     Background="Transparent" BorderThickness="0"
-                                    Foreground="#6688AA"
+                                    Foreground="#6688AA" Focusable="False"
                                     HorizontalAlignment="Center" VerticalAlignment="Center"
                                     Width="40" Height="40"
                                     Click="EyeToggle_Click" Cursor="Hand"
@@ -132,7 +136,7 @@
                     <!-- 關閉 -->
                     <Button Grid.Column="2" Content="✕"
                             FontSize="20" Foreground="#90A4AE"
-                            Width="44" Height="44"
+                            Width="44" Height="44" Focusable="False"
                             Click="CancelButton_Click" Cursor="Hand">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
@@ -158,8 +162,9 @@
 
         <!-- 隱藏焦點接收器：攔截實體鍵盤輸入 -->
         <TextBox x:Name="FocusCatcher"
-                 Opacity="0" Width="0" Height="0"
-                 IsReadOnly="False"
+                 Opacity="0" IsHitTestVisible="False"
+                 Focusable="True" IsReadOnly="False"
+                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                  PreviewTextInput="FocusCatcher_PreviewTextInput"
                  PreviewKeyDown="FocusCatcher_PreviewKeyDown" />
     </Grid>

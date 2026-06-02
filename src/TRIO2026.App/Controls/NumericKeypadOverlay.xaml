@@ -2,7 +2,9 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:svc="clr-namespace:TRIO2026.App.Services"
-             Visibility="Collapsed">
+             Visibility="Collapsed"
+             KeyboardNavigation.TabNavigation="None"
+             PreviewKeyDown="OnPreviewKeyDown">
 
     <UserControl.Resources>
         <!-- 數字按鈕樣式 — 觸控優化，無 Hover 效果 -->

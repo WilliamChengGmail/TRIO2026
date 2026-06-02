@@ -18,6 +18,7 @@ namespace TRIO2026.App.Views.Pages;
 public partial class UvDecontaminationPage : UserControl
 {
     private readonly UvDecontaminationViewModel _viewModel;
+    private readonly SessionService _sessionService;
 
     public UvDecontaminationPage(
         UvDecontaminationViewModel viewModel,
@@ -30,6 +31,7 @@ public partial class UvDecontaminationPage : UserControl
     {
         InitializeComponent();
         _viewModel = viewModel;
+        _sessionService = sessionService;
         DataContext = _viewModel;
 
         // 初始化共用使用者選單
@@ -50,6 +52,10 @@ public partial class UvDecontaminationPage : UserControl
             {
                 UserMenu.IsHomeEnabled = !_viewModel.IsRunning;
                 UserMenu.IsUserIconEnabled = !_viewModel.IsRunning;
+
+                // 註：UV 執行中不暫停閒置計時器
+                // 安全考量：即使 UV 進行中，超時仍應鎖定畫面
+                // LockScreen 已支援穿透訊息（門板事件）和完成訊息佇列
             }
         };
     }
@@ -88,15 +94,29 @@ public partial class UvDecontaminationPage : UserControl
         var shell = Window.GetWindow(this) as AppShell;
         if (shell != null)
         {
-            var dialog = shell.FindName("DialogOverlay") as OverlayDialog;
-            if (dialog != null)
+            var loc = LocalizationService.Instance;
+
+            // 鎖定中 → 完成訊息排隊，解鎖後才顯示
+            if (shell.LockScreen.IsShowing)
             {
-                var loc = LocalizationService.Instance;
-                await dialog.ShowAsync(
+                _sessionService.EnqueueMessage(
                     loc["UV.CompleteTitle"],
                     loc["UV.CompleteMessage"],
-                    loc["Common.OK"],
-                    OverlayDialogIcon.Success);
+                    "✅");
+                // 清除工作狀態顯示
+                shell.LockScreen.UpdateWorkStatus(null);
+            }
+            else
+            {
+                var dialog = shell.FindName("DialogOverlay") as OverlayDialog;
+                if (dialog != null)
+                {
+                    await dialog.ShowAsync(
+                        loc["UV.CompleteTitle"],
+                        loc["UV.CompleteMessage"],
+                        loc["Common.OK"],
+                        OverlayDialogIcon.Success);
+                }
             }
         }
     }
@@ -131,15 +151,32 @@ public partial class UvDecontaminationPage : UserControl
         }
     }
 
-    /// <summary>門板開啟 — 顯示錯誤 Overlay</summary>
+    /// <summary>門板開啟 — 顯示錯誤 Overlay（鎖定中穿透顯示）</summary>
     private void OnDoorInterrupted(object? sender, EventArgs e)
     {
         DoorErrorOverlay.Show();
+
+        // 鎖定中 → 穿透訊息顯示在鎖定畫面上
+        var shell = Window.GetWindow(this) as AppShell;
+        if (shell?.LockScreen.IsShowing == true)
+        {
+            var loc = LocalizationService.Instance;
+            shell.LockScreen.ShowPassthroughMessage(
+                loc["UV.DoorErrorTitle"],
+                loc["UV.DoorErrorMessage"]);
+        }
     }
 
-    /// <summary>門板關閉 — 隱藏錯誤 Overlay</summary>
+    /// <summary>門板關閉 — 隱藏錯誤 Overlay（鎖定中自動關閉穿透訊息）</summary>
     private void OnDoorResumed(object? sender, EventArgs e)
     {
         DoorErrorOverlay.Hide();
+
+        // 鎖定中 → 自動關閉穿透訊息
+        var shell = Window.GetWindow(this) as AppShell;
+        if (shell?.LockScreen.IsShowing == true)
+        {
+            shell.LockScreen.HidePassthroughMessage();
+        }
     }
 }

@@ -55,6 +55,13 @@ public partial class NumericKeypadOverlay : UserControl
         _onCancel = null;
     }
 
+    /// <summary>鍵盤顯示時攔截 Tab 鍵，防止焦點跳離</summary>
+    private void OnPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Tab)
+            e.Handled = true;
+    }
+
     /// <summary>
     /// 隨機排列數字按鈕 0-9 + 退格鍵
     /// </summary>

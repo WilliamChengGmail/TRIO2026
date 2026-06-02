@@ -297,7 +297,7 @@ public class UvDecontaminationViewModel : ViewModelBase
         if (SelectedOption == null) return;
 
         RemainingSeconds = SelectedOption.DurationSeconds;
-        var success = await _hardwareService.StartUvLampAsync();
+        var success = await _hardwareService.StartUvLampAsync(SelectedOption.DurationSeconds);
         if (!success)
         {
             EventLogService.Instance?.LogError("UV", "UvViewModel",

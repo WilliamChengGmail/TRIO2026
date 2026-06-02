@@ -14,8 +14,9 @@ namespace TRIO2026.Core.Interfaces;
 public interface IUvHardwareService
 {
     /// <summary>啟動 UV 燈</summary>
+    /// <param name="durationSeconds">照射時長（秒）</param>
     /// <returns>true=啟動成功, false=啟動失敗</returns>
-    Task<bool> StartUvLampAsync();
+    Task<bool> StartUvLampAsync(int durationSeconds);
 
     /// <summary>停止 UV 燈</summary>
     /// <returns>true=停止成功, false=停止失敗</returns>

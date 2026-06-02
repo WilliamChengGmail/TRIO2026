@@ -84,13 +84,35 @@ public partial class TouchKeyboardOverlay : UserControl
 
         Visibility = Visibility.Visible;
 
-        // 聚焦隱藏 TextBox 以接收實體鍵盤輸入（等 layout 完成）
+        // 聚焦隱藏 TextBox 以接收實體鍵盤輸入
         FocusCatcher.Text = "";
+        // 使用 Loaded 優先級（比 Input 更晚），確保 layout 完全結束後再搶焦點
         Dispatcher.BeginInvoke(() =>
         {
             FocusCatcher.Focus();
             Keyboard.Focus(FocusCatcher);
-        }, System.Windows.Threading.DispatcherPriority.Input);
+            System.Diagnostics.Debug.WriteLine(
+                $"[TouchKeyboard] FocusCatcher focused = {FocusCatcher.IsFocused}, " +
+                $"KbFocused = {FocusCatcher.IsKeyboardFocused}");
+        }, System.Windows.Threading.DispatcherPriority.Loaded);
+
+        // 二次保險：100ms 後若焦點仍不在 FocusCatcher，再搶一次
+        var timer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(100)
+        };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            if (!FocusCatcher.IsKeyboardFocused && Visibility == Visibility.Visible)
+            {
+                FocusCatcher.Focus();
+                Keyboard.Focus(FocusCatcher);
+                System.Diagnostics.Debug.WriteLine(
+                    $"[TouchKeyboard] Retry: FocusCatcher KbFocused = {FocusCatcher.IsKeyboardFocused}");
+            }
+        };
+        timer.Start();
     }
 
     /// <summary>隱藏鍵盤</summary>
@@ -100,6 +122,13 @@ public partial class TouchKeyboardOverlay : UserControl
         _inputText = "";
         _onConfirm = null;
         _onCancel = null;
+    }
+
+    /// <summary>鍵盤顯示時攔截 Tab 鍵，防止焦點跳離</summary>
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Tab)
+            e.Handled = true;
     }
 
     // ═══════════════════════════════════════
@@ -307,6 +336,9 @@ public partial class TouchKeyboardOverlay : UserControl
     {
         switch (e.Key)
         {
+            case Key.Tab:
+                e.Handled = true; // 攔截 Tab，不做任何事
+                break;
             case Key.Back:
                 OnBackspaceClick(this, e);
                 e.Handled = true;

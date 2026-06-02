@@ -237,12 +237,14 @@ public partial class TouchKeyboardOverlay : UserControl
             _inputText += ch;
             UpdateDisplay();
         }
+        RestoreFocus();
     }
 
     private void OnShiftClick(object sender, RoutedEventArgs e)
     {
         _isShifted = !_isShifted;
-        BuildKeyboard(); // 重建以更新大小寫顯示
+        BuildKeyboard();
+        RestoreFocus();
     }
 
     private void OnSymbolClick(object sender, RoutedEventArgs e)
@@ -250,16 +252,14 @@ public partial class TouchKeyboardOverlay : UserControl
         _isSymbolMode = true;
         _isShifted = false;
         BuildKeyboard();
-        Dispatcher.BeginInvoke(() => { FocusCatcher.Focus(); Keyboard.Focus(FocusCatcher); },
-            System.Windows.Threading.DispatcherPriority.Input);
+        RestoreFocus();
     }
 
     private void OnAbcClick(object sender, RoutedEventArgs e)
     {
         _isSymbolMode = false;
         BuildKeyboard();
-        Dispatcher.BeginInvoke(() => { FocusCatcher.Focus(); Keyboard.Focus(FocusCatcher); },
-            System.Windows.Threading.DispatcherPriority.Input);
+        RestoreFocus();
     }
 
     private void OnBackspaceClick(object sender, RoutedEventArgs e)
@@ -269,12 +269,14 @@ public partial class TouchKeyboardOverlay : UserControl
             _inputText = _inputText[..^1];
             UpdateDisplay();
         }
+        RestoreFocus();
     }
 
     private void OnSpaceClick(object sender, RoutedEventArgs e)
     {
         _inputText += " ";
         UpdateDisplay();
+        RestoreFocus();
     }
 
     private void OnConfirmClick(object sender, RoutedEventArgs e)
@@ -297,6 +299,20 @@ public partial class TouchKeyboardOverlay : UserControl
         _showPlainText = !_showPlainText;
         EyeToggle.Content = _showPlainText ? "🙈" : "👁";
         UpdateDisplay();
+        RestoreFocus();
+    }
+
+    /// <summary>所有虛擬按鈕操作後統一恢復 FocusCatcher 鍵盤焦點</summary>
+    private void RestoreFocus()
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (Visibility == Visibility.Visible && !FocusCatcher.IsKeyboardFocused)
+            {
+                FocusCatcher.Focus();
+                Keyboard.Focus(FocusCatcher);
+            }
+        }, System.Windows.Threading.DispatcherPriority.Input);
     }
 
     // ═══════════════════════════════════════

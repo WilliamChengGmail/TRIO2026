@@ -225,7 +225,7 @@ public static class SystemSettingSeed
                 Key = "max_failed_attempts",
                 Value = "5",
                 Description = "最大連續登入失敗次數（超過後鎖定帳號）",
-                Remark = "⚠️ 部分實作 — AuthService 使用硬編碼 const=5，未讀取 DB"
+                Remark = "✅ 已實作 — AuthService 從 DB 讀取"
             },
             new()
             {
@@ -234,7 +234,7 @@ public static class SystemSettingSeed
                 Key = "lockout_minutes",
                 Value = "15",
                 Description = "帳號鎖定持續時間（分鐘）",
-                Remark = "⚠️ 部分實作 — AuthService 使用硬編碼 const=15，未讀取 DB"
+                Remark = "✅ 已實作 — AuthService 從 DB 讀取"
             },
             new()
             {

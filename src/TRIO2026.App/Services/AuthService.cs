@@ -14,11 +14,17 @@ namespace TRIO2026.App.Services;
 /// </summary>
 public class AuthService
 {
-    private const int MaxFailedAttempts = 5;
-    private const int LockoutMinutes = 15;
-
     private readonly AppMainDbContext _db;
     private readonly PasswordPolicyService? _passwordPolicy;
+    private readonly SystemSettingService? _systemSettings;
+
+    /// <summary>最大連續登入失敗次數（從 DB 讀取，預設 5）</summary>
+    private int MaxFailedAttempts
+        => _systemSettings?.MaxFailedAttempts ?? 5;
+
+    /// <summary>帳號鎖定持續分鐘數（從 DB 讀取，預設 15）</summary>
+    private int LockoutMinutes
+        => _systemSettings?.LockoutMinutes ?? 15;
 
     public AuthService(AppMainDbContext db)
     {
@@ -29,6 +35,14 @@ public class AuthService
     {
         _db = db;
         _passwordPolicy = passwordPolicy;
+    }
+
+    public AuthService(AppMainDbContext db, PasswordPolicyService passwordPolicy,
+        SystemSettingService systemSettings)
+    {
+        _db = db;
+        _passwordPolicy = passwordPolicy;
+        _systemSettings = systemSettings;
     }
 
     /// <summary>
@@ -129,6 +143,31 @@ public class AuthService
     }
 
     /// <summary>
+    /// 取得可登入的使用者清單（含 Guest 免密碼帳號，供下拉選單使用）
+    /// Guest 帳號排在最前面
+    /// </summary>
+    public async Task<List<User>> GetAllUsersWithGuestAsync()
+    {
+        _db.ChangeTracker.Clear();
+        return await _db.Users
+            .Where(u => u.IsActive == 1 && u.IsDeleted == 0
+                && (u.PasswordHash != "" || u.Username == "guest"))
+            .OrderBy(u => u.Username == "guest" ? 0 : 1) // Guest 排最前
+            .ThenBy(u => u.Username)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 依帳號名稱取得使用者（供 Guest 免密碼登入使用）
+    /// </summary>
+    public async Task<User?> GetUserByUsernameAsync(string username)
+    {
+        _db.ChangeTracker.Clear();
+        return await _db.Users
+            .FirstOrDefaultAsync(u => u.Username == username && u.IsDeleted == 0);
+    }
+
+    /// <summary>
     /// 更新使用者的語系偏好
     /// </summary>
     public async Task UpdateLanguagePreferenceAsync(int userId, string langCode)
@@ -191,6 +230,22 @@ public class AuthService
         await _db.SaveChangesAsync();
 
         return (true, null);
+    }
+
+    /// <summary>驗證密碼是否與 hash 匹配（供鎖定畫面等場景使用）</summary>
+    public bool VerifyPassword(string password, string passwordHash)
+    {
+        if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(passwordHash))
+            return false;
+
+        try
+        {
+            return BCrypt.Net.BCrypt.Verify(password, passwordHash);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 

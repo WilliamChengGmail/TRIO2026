@@ -58,6 +58,12 @@ public partial class LoginPage : UserControl
         // 使用者下拉選單（受 DB 控制 — show_user_dropdown）
         _viewModel.ShowUserDropdown = _settings.ShowUserDropdown;
 
+        // 記住密碼開關（受 DB 控制 — remember_password_enabled）
+        ChkRemember.Visibility = _settings.RememberPasswordEnabled
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        _viewModel.RememberPasswordEnabled = _settings.RememberPasswordEnabled;
+
         // 多語系
         ApplyLocalization();
 

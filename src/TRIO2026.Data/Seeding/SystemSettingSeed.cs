@@ -125,6 +125,24 @@ public static class SystemSettingSeed
                 Description = "免登入模式右上角顯示的名稱",
                 Remark = "✅ 已實作 — SessionService + UserMenuControl 讀取顯示"
             },
+            new()
+            {
+                Id = 37,
+                Category = "Auth",
+                Key = "guest_login_enabled",
+                Value = "0",
+                Description = "是否啟用 Guest 免密碼帳號登入（0=停用, 1=啟用；啟用時 guest 帳號可免密碼登入）",
+                Remark = "✅ 已實作 — LoginViewModel + LoginPage 控制免密碼登入流程"
+            },
+            new()
+            {
+                Id = 38,
+                Category = "Auth",
+                Key = "guest_multilanguage_enabled",
+                Value = "0",
+                Description = "Guest 登入後是否允許切換語系（0=使用預設語系, 1=可切換語系）",
+                Remark = "✅ 已實作 — UserMenuControl 控制 Guest 語系按鈕可見性"
+            },
 
             // ══════════════════════════════════════
             // Device — 裝置運作模式
@@ -196,9 +214,9 @@ public static class SystemSettingSeed
                 Id = 17,
                 Category = "LoginUI",
                 Key = "remember_password_enabled",
-                Value = "1",
+                Value = "0",
                 Description = "是否允許記住密碼功能（0=停用, 1=啟用）",
-                Remark = "⬜ 未實作 — 記住密碼功能存在但未讀取此開關"
+                Remark = "✅ 已實作 — LoginPage/ViewModel 根據此開關控制 CheckBox 與 credentials 存取"
             },
             new()
             {
@@ -223,9 +241,9 @@ public static class SystemSettingSeed
                 Id = 20,
                 Category = "LoginUI",
                 Key = "session_timeout_minutes",
-                Value = "30",
+                Value = "15",
                 Description = "Session 閒置逾時（分鐘，0=不逾時）",
-                Remark = "⬜ 未實作 — 無閒置偵測計時器"
+                Remark = "✅ 已實作 — IdleTimerService 讀取"
             },
 
             // ══════════════════════════════════════
@@ -382,6 +400,46 @@ public static class SystemSettingSeed
                 Value = "10",
                 Description = "使用者選單自動關閉秒數（預設 10 秒，0=不自動關閉）",
                 Remark = "✅ 已實作 — UserMenuControl.cs 讀取控制自動關閉"
+            },
+
+            // ══════════════════════════════════════
+            // LoginUI — Session Lock（閒置鎖定）
+            // ══════════════════════════════════════
+            new()
+            {
+                Id = 37,
+                Category = "LoginUI",
+                Key = "session_timeout_action",
+                Value = "lock",
+                Description = "Session 超時動作（lock=鎖定畫面 / logout=完整登出）",
+                Remark = "✅ 已實作 — AppShell 讀取控制超時行為"
+            },
+            new()
+            {
+                Id = 38,
+                Category = "LoginUI",
+                Key = "session_timeout_warning_seconds",
+                Value = "60",
+                Description = "鎖定前倒數警告秒數（0=不預警）",
+                Remark = "✅ 已實作 — IdleTimerService 觸發 WarningTriggered"
+            },
+            new()
+            {
+                Id = 39,
+                Category = "LoginUI",
+                Key = "lock_screen_switch_user_enabled",
+                Value = "0",
+                Description = "鎖定畫面是否顯示『切換使用者』按鈕（0=隱藏, 1=顯示）",
+                Remark = "✅ 已實作 — LockScreenOverlay 讀取控制按鈕顯示"
+            },
+            new()
+            {
+                Id = 40,
+                Category = "LoginUI",
+                Key = "session_timeout_countdown_visible",
+                Value = "0",
+                Description = "是否在底部狀態列顯示 Session Timeout 倒數（0=隱藏, 1=顯示）",
+                Remark = "✅ 已實作 — MenuPage / UvPage 底部列倒數顯示"
             },
         };
     }

@@ -36,9 +36,14 @@ public class LoginViewModel : ViewModelBase
         ScreenInfo = $"{ScreenDetector.ScreenWidth}×{ScreenDetector.ScreenHeight}" +
                      (IsTouchScreen ? " (觸控)" : " (非觸控)");
 
-        // 嘗試載入記住的密碼
+        // 嘗試載入記住的密碼（由 LoginPage 設定 RememberPasswordEnabled 後再決定是否生效）
         LoadRememberedCredentials();
     }
+
+    // ===== 系統設定 =====
+
+    /// <summary>記住密碼功能是否啟用（由 LoginPage 從 SystemSettingService 注入）</summary>
+    public bool RememberPasswordEnabled { get; set; }
 
     // ===== 繫結屬性 =====
 
@@ -219,7 +224,7 @@ public class LoginViewModel : ViewModelBase
                 case AuthResult.Success:
                     _sessionService.SetCurrentUser(user!);
 
-                    if (RememberMe)
+                    if (RememberPasswordEnabled && RememberMe)
                         _tokenService.SaveRememberedCredentials(Username, Password);
                     else
                         _tokenService.ClearRememberedCredentials();
@@ -270,6 +275,12 @@ public class LoginViewModel : ViewModelBase
 
     private void LoadRememberedCredentials()
     {
+        if (!RememberPasswordEnabled)
+        {
+            _tokenService.ClearRememberedCredentials();
+            return;
+        }
+
         var saved = _tokenService.LoadRememberedCredentials();
         if (saved.HasValue)
         {

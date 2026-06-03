@@ -100,7 +100,7 @@ void ListAccounts()
     foreach (var a in accounts)
     {
         var role = roleName.GetValueOrDefault(a.Level, $"Level {a.Level}");
-        var lastLogin = a.LastLogin.Length > 19 ? a.LastLogin[..19] : a.LastLogin;
+        var lastLogin = FormatToLocal(a.LastLogin);
 
         // 帳號標題列
         Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -138,11 +138,40 @@ void ListAccounts()
         // 鎖定/失敗次數
         if (!string.IsNullOrEmpty(a.Locked) || a.FailedCount > 0)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            if (!string.IsNullOrEmpty(a.Locked) && a.Locked.Length >= 19)
-                Console.WriteLine($"     !! 鎖定至 {a.Locked[..19]}");
-            else if (a.FailedCount > 0)
-                Console.WriteLine($"     !! 登入失敗 {a.FailedCount} 次");
+            if (!string.IsNullOrEmpty(a.Locked))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"     !! 鎖定原始值 (UTC): {a.Locked}");
+
+                if (DateTime.TryParse(a.Locked, null, System.Globalization.DateTimeStyles.RoundtripKind, out var lockedUtc))
+                {
+                    var lockedLocal = lockedUtc.ToLocalTime();
+                    var isStillLocked = DateTime.UtcNow < lockedUtc;
+
+                    Console.ForegroundColor = isStillLocked ? ConsoleColor.Red : ConsoleColor.DarkYellow;
+                    var offset = TimeZoneInfo.Local.GetUtcOffset(lockedLocal);
+                    var tzStr = $"{(offset >= TimeSpan.Zero ? "+" : "-")}{Math.Abs(offset.Hours):D2}:{Math.Abs(offset.Minutes):D2}";
+                    Console.Write($"     !! 鎖定至 (本地): {lockedLocal:yyyy-MM-dd HH:mm:ss} ({tzStr})");
+
+                    if (isStillLocked)
+                    {
+                        var remaining = (int)(lockedUtc - DateTime.UtcNow).TotalMinutes;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"  ← 鎖定中（剩餘 {remaining} 分鐘）");
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.WriteLine("  ← 已過期（下次登入自動解鎖）");
+                    }
+                }
+            }
+
+            if (a.FailedCount > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"     !! 連續登入失敗 {a.FailedCount} 次");
+            }
         }
 
         // 備註
@@ -368,4 +397,18 @@ string ReadPasswordMasked()
     }
     Console.WriteLine();
     return new string(pwd.ToArray());
+}
+
+// ── UTC → 本地時間格式化 ──
+string FormatToLocal(string isoUtc)
+{
+    if (string.IsNullOrEmpty(isoUtc) || isoUtc == "-") return "-";
+    if (DateTime.TryParse(isoUtc, null, System.Globalization.DateTimeStyles.RoundtripKind, out var dt))
+    {
+        var local = dt.ToLocalTime();
+        var offset = TimeZoneInfo.Local.GetUtcOffset(local);
+        var sign = offset >= TimeSpan.Zero ? "+" : "-";
+        return $"{local:yyyy-MM-dd HH:mm:ss} ({sign}{Math.Abs(offset.Hours):D2}:{Math.Abs(offset.Minutes):D2})";
+    }
+    return isoUtc;
 }

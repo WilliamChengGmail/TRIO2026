@@ -217,7 +217,7 @@ public class LoginViewModel : ViewModelBase
                 return;
             }
 
-            var (result, user) = await _authService.LoginAsync(Username, Password);
+            var (result, user, detail) = await _authService.LoginAsync(Username, Password);
 
             switch (result)
             {
@@ -245,19 +245,22 @@ public class LoginViewModel : ViewModelBase
                 case AuthResult.UserNotFound:
                 case AuthResult.WrongPassword:
                     ErrorMessage = LocalizationService.Instance["Login.InvalidCredentials"];
-                    EventLogService.Instance.LogAuth("Login", Username, false, $"Reason={result}");
+                    EventLogService.Instance.LogAuth("Login", Username, false,
+                        $"Reason={result}, {detail}");
                     TriggerShake();
                     break;
 
                 case AuthResult.AccountDisabled:
                     ErrorMessage = LocalizationService.Instance["Login.AccountDisabled"];
-                    EventLogService.Instance.LogAuth("Login", Username, false, "Reason=AccountDisabled");
+                    EventLogService.Instance.LogAuth("Login", Username, false,
+                        $"Reason=AccountDisabled, {detail}");
                     TriggerShake();
                     break;
 
                 case AuthResult.AccountLocked:
                     ErrorMessage = LocalizationService.Instance["Login.AccountLocked"];
-                    EventLogService.Instance.LogAuth("Login", Username, false, "Reason=AccountLocked");
+                    EventLogService.Instance.LogAuth("Login", Username, false,
+                        $"Reason=AccountLocked, {detail}");
                     TriggerShake();
                     break;
             }

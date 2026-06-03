@@ -557,11 +557,7 @@ public partial class AccountManagementPage : UserControl
     }
 
     private static string FormatIso8601(string iso)
-    {
-        if (DateTime.TryParse(iso, out var dt))
-            return dt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
-        return iso;
-    }
+        => Core.Helpers.TimeDisplayHelper.ToLocalDisplay(iso);
 
     private async Task ShowOperationError(string? error)
     {

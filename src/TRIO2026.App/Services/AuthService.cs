@@ -48,7 +48,8 @@ public class AuthService
     /// <summary>
     /// 驗證使用者帳號密碼
     /// </summary>
-    public async Task<(AuthResult Result, User? User)> LoginAsync(string username, string password)
+    /// <returns>(Result, User, Detail) — Detail 供 EventLog 記錄上下文</returns>
+    public async Task<(AuthResult Result, User? User, string? Detail)> LoginAsync(string username, string password)
     {
         // 清除 Change Tracker 快取，確保從 DB 讀取最新資料
         // （WPF 中 DbContext 為長生命週期，外部工具修改 DB 後需要此步驟）
@@ -59,12 +60,12 @@ public class AuthService
 
         if (user == null)
         {
-            return (AuthResult.UserNotFound, null);
+            return (AuthResult.UserNotFound, null, null);
         }
 
         if (user.IsActive == 0)
         {
-            return (AuthResult.AccountDisabled, null);
+            return (AuthResult.AccountDisabled, null, null);
         }
 
         // 檢查鎖定狀態
@@ -74,7 +75,9 @@ public class AuthService
             {
                 if (DateTime.UtcNow < lockedUntil)
                 {
-                    return (AuthResult.AccountLocked, null);
+                    var remaining = (int)(lockedUntil - DateTime.UtcNow).TotalMinutes;
+                    return (AuthResult.AccountLocked, null,
+                        $"Status=AlreadyLocked, RemainingMinutes={remaining}");
                 }
                 // 鎖定已過期，清除
                 user.LockedUntil = null;
@@ -85,7 +88,7 @@ public class AuthService
         // 免登入專用帳號（PasswordHash 為空）不允許密碼登入
         if (string.IsNullOrEmpty(user.PasswordHash))
         {
-            return (AuthResult.AccountDisabled, null);
+            return (AuthResult.AccountDisabled, null, "Reason=NoPasswordHash");
         }
 
         // 驗證密碼
@@ -107,10 +110,12 @@ public class AuthService
             {
                 user.LockedUntil = DateTime.UtcNow.AddMinutes(LockoutMinutes).ToString("O");
                 await _db.SaveChangesAsync();
-                return (AuthResult.AccountLocked, null);
+                return (AuthResult.AccountLocked, null,
+                    $"Status=JustLocked, FailedCount={user.FailedLoginCount}, LockoutMinutes={LockoutMinutes}");
             }
             await _db.SaveChangesAsync();
-            return (AuthResult.WrongPassword, null);
+            return (AuthResult.WrongPassword, null,
+                $"FailedCount={user.FailedLoginCount}/{MaxFailedAttempts}");
         }
 
         // 登入成功
@@ -119,7 +124,7 @@ public class AuthService
         user.LastLoginAt = DateTime.UtcNow.ToString("O");
         await _db.SaveChangesAsync();
 
-        return (AuthResult.Success, user);
+        return (AuthResult.Success, user, null);
     }
 
     /// <summary>

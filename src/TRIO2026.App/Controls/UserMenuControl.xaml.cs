@@ -335,7 +335,7 @@ public partial class UserMenuControl : UserControl
 
             if (loginResult.IsCancelled) return;
 
-            var (authResult, user) = await _authService.LoginAsync(
+            var (authResult, user, _) = await _authService.LoginAsync(
                 loginResult.Username, loginResult.Password);
 
             if (authResult != Core.Enums.AuthResult.Success)
@@ -558,7 +558,7 @@ public partial class UserMenuControl : UserControl
 
             if (loginResult.IsCancelled) return;
 
-            var (authResult, user) = await _authService.LoginAsync(
+            var (authResult, user, _) = await _authService.LoginAsync(
                 loginResult.Username, loginResult.Password);
 
             if (authResult != Core.Enums.AuthResult.Success)

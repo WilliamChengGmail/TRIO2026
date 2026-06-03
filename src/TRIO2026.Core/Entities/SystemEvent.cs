@@ -93,7 +93,7 @@ public class SystemEvent
         return new SystemEvent
         {
             Timestamp = now.ToString("o"),
-            TimestampLocal = now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.fff"),
+            TimestampLocal = Helpers.TimeDisplayHelper.ToLocalTimestampWithOffset(now),
             ErrorId = errorId,
             Level = level,
             Category = category,

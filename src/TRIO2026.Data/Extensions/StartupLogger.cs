@@ -9,7 +9,7 @@ namespace TRIO2026.Data.Extensions;
 ///   - 支援同時輸出到 Console 和檔案
 ///   - App 啟動完成後可關閉，後續由 EventLogService 接管
 /// 
-/// 檔案位置：Database/startup.log
+/// 檔案位置：Logs/startup-init-logs/startup_*.log
 /// 
 /// 製作者: Office of William
 /// </summary>
@@ -19,8 +19,8 @@ public sealed class StartupLogger : IDisposable
     private readonly string _logPath;
     private bool _disposed;
 
-    /// <summary>最近一次初始化的 StartupLogger 實例</summary>
-    public static StartupLogger? Current { get; private set; }
+    /// <summary>最近一次初始化的 StartupLogger 實例（可由外部切換）</summary>
+    public static StartupLogger? Current { get; set; }
 
     /// <summary>是否有任何錯誤被記錄</summary>
     public bool HasErrors { get; private set; }

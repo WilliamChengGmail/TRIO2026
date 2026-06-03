@@ -59,8 +59,27 @@ public class EventLogService : IDisposable
 
         // Dead Letter 目錄
         var baseDir = FindProjectRoot();
-        _deadLetterDir = Path.Combine(baseDir, "Logs", "DeadLetter");
+        _deadLetterDir = Path.Combine(baseDir, "Logs", "db-failover-logs");
         Directory.CreateDirectory(_deadLetterDir);
+
+        // ── 啟動健康檢查：探測 EventLog DB 可寫性 ──
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<EventLogDbContext>();
+            if (!db.Database.CanConnect())
+            {
+                var msg = "⚠️ [EventLog] DB 連線失敗 — 事件將寫入 db-failover-logs";
+                Console.WriteLine(msg);
+                Data.Extensions.StartupLogger.Current?.Warn("EventLogService", msg);
+            }
+        }
+        catch (Exception ex)
+        {
+            var msg = $"⚠️ [EventLog] DB 健康檢查失敗: {ex.Message} — 事件將寫入 db-failover-logs";
+            Console.WriteLine(msg);
+            Data.Extensions.StartupLogger.Current?.Warn("EventLogService", msg, ex.Message);
+        }
 
         // 啟動背景消費者
         _consumerTask = Task.Run(() => ConsumeAsync(_cts.Token));

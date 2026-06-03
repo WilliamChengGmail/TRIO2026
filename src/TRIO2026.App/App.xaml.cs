@@ -79,19 +79,30 @@ public partial class App : Application
             var baseDir = FindProjectRoot();
             var dbDir = Path.Combine(baseDir, "Database");
 
-            startupLog = new TRIO2026.Data.Extensions.StartupLogger(dbDir);
+            var startupLogDir = Path.Combine(baseDir, "Logs", "startup-init-logs");
+            startupLog = new TRIO2026.Data.Extensions.StartupLogger(startupLogDir);
             startupLog.Info("App", "應用程式啟動", $"BaseDir={baseDir}");
 
             // 確保 Database 目錄存在
             if (!Directory.Exists(dbDir))
                 Directory.CreateDirectory(dbDir);
 
-            // ── DB 初始化（使用 StartupLogger 記錄）──
+            // ── DB 初始化（獨立日誌，寫到 db-init-logs/）──
+            var dbInitLogDir = Path.Combine(baseDir, "Logs", "db-init-logs");
+            using var dbInitLog = new TRIO2026.Data.Extensions.StartupLogger(dbInitLogDir);
+            dbInitLog.Info("DbInit", "DB 初始化開始", $"DatabaseDir={dbDir}");
+
             TRIO2026.Data.Extensions.DatabaseInitializer.SetDatabaseDirectory(dbDir);
             TRIO2026.Data.Extensions.DatabaseInitializer.PasswordHasher =
                 pw => AuthService.HashPassword(pw);
             TRIO2026.Data.Extensions.DatabaseInitializer.InitializeAllAsync()
                 .GetAwaiter().GetResult();
+
+            dbInitLog.Info("DbInit", "DB 初始化完成");
+
+            // 切回 App 啟動日誌
+            TRIO2026.Data.Extensions.StartupLogger.Current = startupLog;
+            startupLog.Info("App", "DB 初始化階段完成");
 
             // DI 容器
             var services = new ServiceCollection();

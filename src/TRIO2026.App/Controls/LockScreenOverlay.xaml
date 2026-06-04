@@ -198,6 +198,73 @@
             </StackPanel>
         </Border>
 
+        <!-- Admin 登出確認面板 -->
+        <Border x:Name="AdminConfirmPanel"
+                VerticalAlignment="Center" HorizontalAlignment="Center"
+                Width="440" CornerRadius="20" Padding="32,28"
+                Visibility="Collapsed">
+            <Border.Background>
+                <SolidColorBrush Color="#2A3A5C" Opacity="0.98" />
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="40" ShadowDepth="0" Opacity="0.6" />
+            </Border.Effect>
+            <StackPanel>
+                <!-- 警告圖示 -->
+                <TextBlock Text="⚠️" FontSize="42"
+                           HorizontalAlignment="Center" Margin="0,0,0,12" />
+
+                <!-- 標題 -->
+                <TextBlock x:Name="ConfirmTitle" Text=""
+                           FontSize="20" FontWeight="Bold" Foreground="#FFB74D"
+                           HorizontalAlignment="Center" Margin="0,0,0,8" />
+
+                <!-- 警告訊息 -->
+                <TextBlock x:Name="ConfirmMessage" Text=""
+                           FontSize="15" Foreground="#B0BEC5"
+                           HorizontalAlignment="Center" TextWrapping="Wrap"
+                           TextAlignment="Center" Margin="0,0,0,24" />
+
+                <!-- 按鈕列 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 取消 -->
+                    <Button x:Name="ConfirmCancelBtn" Grid.Column="0"
+                            Height="48" FontSize="16" Foreground="#90CAF9" Cursor="Hand"
+                            Click="ConfirmCancel_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border CornerRadius="12" Padding="0,10"
+                                        Background="#1E2D45" BorderBrush="#4A6A9A" BorderThickness="1">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- 確認登出 -->
+                    <Button x:Name="ConfirmLogoutBtn" Grid.Column="2"
+                            Height="48" FontSize="16" FontWeight="SemiBold"
+                            Foreground="White" Cursor="Hand"
+                            Click="ConfirmLogout_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border CornerRadius="12" Padding="0,10"
+                                        Background="#EF5350">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Border>
+
         <!-- ═══ 鍵盤層 ═══ -->
         <controls:NumericKeypadOverlay x:Name="NumericKeypad" />
         <controls:TouchKeyboardOverlay x:Name="TouchKeyboard" />

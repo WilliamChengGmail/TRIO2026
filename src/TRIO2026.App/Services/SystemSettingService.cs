@@ -237,9 +237,28 @@ public class SystemSettingService
         => GetLiveInt("LoginUI", "lockout_minutes", 15);
 
     /// <summary>Session 閒置逾時（分鐘，0=不逾時）</summary>
-    /// <summary>Session 閒置逾時（分鐘，0=不逾時）</summary>
     public int SessionTimeoutMinutes
-        => GetLiveInt("LoginUI", "session_timeout_minutes", 30);
+        => GetLiveInt("LoginUI", "session_timeout_minutes", 15);
+
+    /// <summary>Session 超時動作（lock=鎖定畫面 / logout=完整登出）</summary>
+    public string SessionTimeoutAction
+        => GetLiveString("LoginUI", "session_timeout_action", "lock");
+
+    /// <summary>鎖定前倒數警告秒數（0=不預警）</summary>
+    public int SessionTimeoutWarningSeconds
+        => GetLiveInt("LoginUI", "session_timeout_warning_seconds", 60);
+
+    /// <summary>鎖定畫面是否顯示 Admin 介入按鈕</summary>
+    public bool LockScreenSwitchUserEnabled
+        => GetLiveString("LoginUI", "lock_screen_switch_user_enabled", "0") == "1";
+
+    /// <summary>Admin 鎖定畫面操作：logout=強制登出, unlock=代理解鎖</summary>
+    public string LockScreenAdminAction
+        => GetLiveString("LoginUI", "lock_screen_admin_action", "logout");
+
+    /// <summary>底部狀態列是否顯示 Session Timeout 倒數</summary>
+    public bool SessionTimeoutCountdownVisible
+        => GetLiveString("LoginUI", "session_timeout_countdown_visible", "0") == "1";
 
     // ═══════════════════════════════════════
     // Auth 設定（轉移自 trio240plus_config.db）
@@ -264,6 +283,14 @@ public class SystemSettingService
     /// <summary>免登入時顯示的名稱（預設 Local Operator）</summary>
     public string GuestAccountDisplayName
         => GetLiveString("Auth", "guest_account_display_name", "Local Operator");
+
+    /// <summary>是否啟用 Guest 免密碼帳號登入（預設 false）</summary>
+    public bool GuestLoginEnabled
+        => GetLiveString("Auth", "guest_login_enabled", "0") == "1";
+
+    /// <summary>Guest 登入後是否允許切換語系（預設 false）</summary>
+    public bool GuestMultiLanguageEnabled
+        => GetLiveString("Auth", "guest_multilanguage_enabled", "0") == "1";
 
     // ═══════════════════════════════════════
     // Device 設定

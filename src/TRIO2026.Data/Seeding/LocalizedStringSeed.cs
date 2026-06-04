@@ -300,6 +300,8 @@ public static class LocalizedStringSeed
             "OK", "確認", "确认", "確認"));
         seeds.AddRange(CreateGroup(ref id, "TouchKeyboard", "Space",
             "Space", "空白", "空格", "スペース"));
+        seeds.AddRange(CreateGroup(ref id, "TouchKeyboard", "Clear",
+            "Clear", "清除", "清除", "クリア"));
 
         // ══════════════════════════════════════════
         // AccountMgmt 模組 — 帳號管理頁面
@@ -552,6 +554,47 @@ public static class LocalizedStringSeed
             "Login", "登　入", "登　录", "ログイン"));
         seeds.AddRange(CreateGroup(ref id, "Login", "Close",
             "Close Application", "關閉應用程式", "关闭应用程序", "アプリを閉じる"));
+
+        // ══════════════════════════════════════════
+        // Lock 模組 — 鎖定畫面
+        // ══════════════════════════════════════════
+        seeds.AddRange(CreateGroup(ref id, "Lock", "Title",
+            "Screen Locked", "螢幕已鎖定", "屏幕已锁定", "画面ロック中"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "Subtitle",
+            "Enter password to unlock", "請輸入密碼解鎖", "请输入密码解锁", "パスワードを入力してロック解除"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "LockedAt",
+            "Locked at {0}", "鎖定時間：{0}", "锁定时间：{0}", "ロック時刻：{0}"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "Unlock",
+            "Unlock", "解鎖", "解锁", "ロック解除"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "SwitchUser",
+            "Admin Override", "Admin 介入", "Admin 介入", "管理者介入"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "InvalidPassword",
+            "Incorrect password.", "密碼錯誤。", "密码错误。", "パスワードが正しくありません。"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "TimeoutWarning",
+            "Locking in {0}s...", "{0} 秒後鎖定...", "{0} 秒后锁定...", "{0}秒後にロック..."));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "WorkStatus",
+            "In Progress", "進行中", "进行中", "実行中"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "CountdownLabel",
+            "Lock in {0}", "{0} 後鎖定", "{0} 后锁定", "{0}後にロック"));
+
+        // Lock 模組 — Admin 介入
+        seeds.AddRange(CreateGroup(ref id, "Lock", "AdminUsernamePrompt",
+            "Enter Admin Username", "請輸入管理員帳號", "请输入管理员账号", "管理者アカウントを入力"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "AdminPasswordPrompt",
+            "Enter Admin Password", "請輸入管理員密碼", "请输入管理员密码", "管理者パスワードを入力"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "AdminAuthFailed",
+            "Authentication failed.", "驗證失敗。", "验证失败。", "認証に失敗しました。"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "AdminInsufficientRole",
+            "Admin privileges required.", "需要管理員權限。", "需要管理员权限。", "管理者権限が必要です。"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "ConfirmLogoutTitle",
+            "Force Logout Warning", "強制登出警告", "强制登出警告", "強制ログアウト警告"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "ConfirmLogoutMessage",
+            "You are about to force logout the current user.\nThe device may still be running tasks.\nPlease ensure all operations are safe before proceeding.",
+            "即將強制登出目前使用者。\n設備可能仍在運行中。\n請確認所有操作安全後再繼續。",
+            "即将强制登出当前用户。\n设备可能仍在运行中。\n请确认所有操作安全后再继续。",
+            "現在のユーザーを強制ログアウトします。\nデバイスがまだ稼働中の可能性があります。\nすべての操作が安全であることを確認してから続行してください。"));
+        seeds.AddRange(CreateGroup(ref id, "Lock", "ConfirmLogoutButton",
+            "Confirm Logout", "確認登出", "确认登出", "ログアウト確認"));
 
         // ══════════════════════════════════════════
         // PasswordUI 模組 — 密碼變更 Overlay

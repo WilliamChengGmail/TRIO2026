@@ -80,4 +80,8 @@ public static class ErrorCodes
     public const string LockInvalidPassword = "WRN-9008";
     public const string LockSwitchUser = "INF-9009";
     public const string LockPassthroughMsg = "INF-9010";
+    public const string LockAdminAuthSuccess = "INF-9011";    // Admin 鎖定畫面驗證成功
+    public const string LockAdminAuthFailed = "WRN-9012";     // Admin 驗證失敗（密碼錯誤/權限不足）
+    public const string LockAdminForceLogout = "WRN-9013";    // Admin 強制登出另一使用者
+    public const string LockAdminProxyUnlock = "WRN-9014";    // Admin 代理解鎖另一使用者的 Session
 }

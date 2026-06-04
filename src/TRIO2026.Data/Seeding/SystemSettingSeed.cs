@@ -429,8 +429,8 @@ public static class SystemSettingSeed
                 Category = "LoginUI",
                 Key = "lock_screen_switch_user_enabled",
                 Value = "0",
-                Description = "鎖定畫面是否顯示『切換使用者』按鈕（0=隱藏, 1=顯示）",
-                Remark = "✅ 已實作 — LockScreenOverlay 讀取控制按鈕顯示"
+                Description = "鎖定畫面是否顯示『Admin 介入』按鈕（0=隱藏, 1=顯示，需 Admin 帳密驗證）",
+                Remark = "✅ 已實作 — LockScreenOverlay 控制按鈕顯示，需 Admin 驗證"
             },
             new()
             {
@@ -440,6 +440,15 @@ public static class SystemSettingSeed
                 Value = "0",
                 Description = "是否在底部狀態列顯示 Session Timeout 倒數（0=隱藏, 1=顯示）",
                 Remark = "✅ 已實作 — MenuPage / UvPage 底部列倒數顯示"
+            },
+            new()
+            {
+                Id = 41,
+                Category = "LoginUI",
+                Key = "lock_screen_admin_action",
+                Value = "logout",
+                Description = "Admin 鎖定畫面驗證後動作（logout=強制登出回登入頁, unlock=代理解鎖繼續操作）",
+                Remark = "✅ 已實作 — LockScreenOverlay 依此設定決定 Admin 介入後行為"
             },
         };
     }

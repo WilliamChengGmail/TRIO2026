@@ -59,7 +59,8 @@ public partial class TouchKeyboardOverlay : UserControl
     /// <param name="initialText">初始文字</param>
     /// <param name="onConfirm">確認 callback</param>
     /// <param name="onCancel">取消 callback</param>
-    public void Show(bool isPassword, string initialText, Action<string> onConfirm, Action? onCancel = null)
+    /// <param name="customTitle">自訂標題（null 時使用預設帳號/密碼標題）</param>
+    public void Show(bool isPassword, string initialText, Action<string> onConfirm, Action? onCancel = null, string? customTitle = null)
     {
         _isPasswordMode = isPassword;
         _inputText = initialText ?? "";
@@ -69,11 +70,18 @@ public partial class TouchKeyboardOverlay : UserControl
         _onConfirm = onConfirm;
         _onCancel = onCancel;
 
-        // 設定標題
-        var loc = LocalizationService.Instance;
-        TitleText.Text = isPassword
-            ? loc["TouchKeyboard.TitlePassword"]
-            : loc["TouchKeyboard.TitleAccount"];
+        // 設定標題（優先使用自訂標題）
+        if (!string.IsNullOrEmpty(customTitle))
+        {
+            TitleText.Text = customTitle;
+        }
+        else
+        {
+            var loc = LocalizationService.Instance;
+            TitleText.Text = isPassword
+                ? loc["TouchKeyboard.TitlePassword"]
+                : loc["TouchKeyboard.TitleAccount"];
+        }
 
         // 眼睛按鈕：僅密碼模式
         EyeToggle.Visibility = isPassword ? Visibility.Visible : Visibility.Collapsed;
@@ -207,6 +215,11 @@ public partial class TouchKeyboardOverlay : UserControl
             LocalizationService.Instance["TouchKeyboard.Confirm"],
             "#2E7D32", 100, OnConfirmClick));
 
+        // 清除
+        bottomRow.Children.Add(CreateFuncButton(
+            LocalizationService.Instance["TouchKeyboard.Clear"],
+            "#B71C1C", 80, OnClearClick));
+
         KeyboardRows.Children.Add(bottomRow);
     }
 
@@ -285,6 +298,13 @@ public partial class TouchKeyboardOverlay : UserControl
         var callback = _onConfirm;
         Hide();
         callback?.Invoke(text);
+    }
+
+    private void OnClearClick(object sender, RoutedEventArgs e)
+    {
+        _inputText = "";
+        UpdateDisplay();
+        RestoreFocus();
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)

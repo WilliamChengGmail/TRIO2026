@@ -13,7 +13,7 @@ namespace TRIO2026.App.Controls;
 /// 
 /// 功能：
 ///   - 密碼驗證解鎖
-///   - 切換使用者（設定控制）
+///   - Admin 介入（強制登出 / 代理解鎖，需 RoleLevel>=3）
 ///   - 進行中工作狀態顯示
 ///   - 穿透訊息（門板警告等高優先級訊息）
 ///
@@ -223,11 +223,133 @@ public partial class LockScreenOverlay : UserControl
 
     private void SwitchUserButton_Click(object sender, RoutedEventArgs e)
     {
-        EventLogService.Instance?.LogInfo("Auth", "LockScreen",
-            ErrorCodes.LockSwitchUser,
-            "Lock Screen - Switch User",
-            $"User={_lockedUser?.Username}");
+        // Admin 介入 — 彈出全鍵盤要求輸入 Admin 帳密
+        TouchKeyboard.Show(
+            isPassword: false,
+            initialText: "",
+            onConfirm: adminUsername =>
+            {
+                TouchKeyboard.Hide();
+                // 第二步：輸入密碼
+                TouchKeyboard.Show(
+                    isPassword: true,
+                    initialText: "",
+                    onConfirm: adminPassword =>
+                    {
+                        TouchKeyboard.Hide();
+                        _ = VerifyAdminAndActAsync(adminUsername, adminPassword);
+                    },
+                    onCancel: () => TouchKeyboard.Hide(),
+                    customTitle: LocalizationService.Instance["Lock.AdminPasswordPrompt"]);
+            },
+            onCancel: () => TouchKeyboard.Hide(),
+            customTitle: LocalizationService.Instance["Lock.AdminUsernamePrompt"]);
+    }
 
+    private async Task VerifyAdminAndActAsync(string adminUsername, string adminPassword)
+    {
+        if (_authService == null || _settings == null || _lockedUser == null) return;
+
+        var loc = LocalizationService.Instance;
+
+        // 呼叫 AuthService 驗證帳密
+        var (authResult, adminUser, _) = await _authService.LoginAsync(adminUsername, adminPassword);
+
+        if (authResult != Core.Enums.AuthResult.Success)
+        {
+            var reason = authResult.ToString();
+            EventLogService.Instance?.LogWarning("Auth", "LockScreen",
+                ErrorCodes.LockAdminAuthFailed,
+                "Lock Screen - Admin Auth Failed",
+                $"AttemptUser={adminUsername}, LockedUser={_lockedUser.Username}, Reason={reason}");
+
+            ShowError(loc["Lock.AdminAuthFailed"]);
+            PlayShakeAnimation();
+            return;
+        }
+
+        // 檢查是否為 Admin 等級
+        if (adminUser!.RoleLevel < 3)
+        {
+            EventLogService.Instance?.LogWarning("Auth", "LockScreen",
+                ErrorCodes.LockAdminAuthFailed,
+                "Lock Screen - Admin Auth Failed (Insufficient Role)",
+                $"AttemptUser={adminUsername}, RoleLevel={adminUser.RoleLevel}, LockedUser={_lockedUser.Username}, Reason=InsufficientRole");
+
+            ShowError(loc["Lock.AdminInsufficientRole"]);
+            PlayShakeAnimation();
+            return;
+        }
+
+        // Admin 驗證成功
+        var action = _settings.LockScreenAdminAction; // "logout" or "unlock"
+
+        EventLogService.Instance?.LogInfo("Auth", "LockScreen",
+            ErrorCodes.LockAdminAuthSuccess,
+            "Lock Screen - Admin Auth Success",
+            $"AdminUser={adminUsername}, LockedUser={_lockedUser.Username}, Action={action}");
+
+        if (action == "unlock")
+        {
+            // 代理解鎖
+            EventLogService.Instance?.LogWarning("Auth", "LockScreen",
+                ErrorCodes.LockAdminProxyUnlock,
+                "Lock Screen - Admin Proxy Unlock",
+                $"AdminUser={adminUsername}, UnlockedUser={_lockedUser.Username}");
+
+            Hide(LockScreenResult.AdminProxyUnlock);
+        }
+        else
+        {
+            // 強制登出 — 先顯示確認面板
+            _pendingAdminUsername = adminUsername;
+            ShowLogoutConfirmation();
+        }
+    }
+
+    /// <summary>暫存 Admin 帳號（確認面板用）</summary>
+    private string? _pendingAdminUsername;
+
+    private void ShowLogoutConfirmation()
+    {
+        var loc = LocalizationService.Instance;
+
+        ConfirmTitle.Text = loc["Lock.ConfirmLogoutTitle"];
+        ConfirmMessage.Text = loc["Lock.ConfirmLogoutMessage"];
+        ConfirmCancelBtn.Content = loc["Common.Cancel"];
+        ConfirmLogoutBtn.Content = loc["Lock.ConfirmLogoutButton"];
+
+        // 隱藏鎖定卡片，顯示確認面板
+        LockCard.Visibility = Visibility.Collapsed;
+        AdminConfirmPanel.Visibility = Visibility.Visible;
+
+        var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200));
+        AdminConfirmPanel.BeginAnimation(OpacityProperty, fadeIn);
+    }
+
+    private void ConfirmCancel_Click(object sender, RoutedEventArgs e)
+    {
+        // 取消 → 回到鎖定畫面
+        EventLogService.Instance?.LogInfo("Auth", "LockScreen",
+            ErrorCodes.LockAdminAuthSuccess,
+            "Lock Screen - Admin Force Logout Cancelled",
+            $"AdminUser={_pendingAdminUsername}, LockedUser={_lockedUser?.Username}");
+
+        AdminConfirmPanel.Visibility = Visibility.Collapsed;
+        LockCard.Visibility = Visibility.Visible;
+        _pendingAdminUsername = null;
+    }
+
+    private void ConfirmLogout_Click(object sender, RoutedEventArgs e)
+    {
+        // 確認登出
+        EventLogService.Instance?.LogWarning("Auth", "LockScreen",
+            ErrorCodes.LockAdminForceLogout,
+            "Lock Screen - Admin Force Logout",
+            $"AdminUser={_pendingAdminUsername}, ForcedOutUser={_lockedUser?.Username}");
+
+        AdminConfirmPanel.Visibility = Visibility.Collapsed;
+        _pendingAdminUsername = null;
         Hide(LockScreenResult.SwitchUser);
     }
 
@@ -276,6 +398,9 @@ public enum LockScreenResult
     /// <summary>密碼驗證成功，解鎖</summary>
     Unlocked,
 
-    /// <summary>切換使用者（完整登出）</summary>
-    SwitchUser
+    /// <summary>Admin 強制登出（完整登出）</summary>
+    SwitchUser,
+
+    /// <summary>Admin 代理解鎖（繼續原使用者操作）</summary>
+    AdminProxyUnlock
 }

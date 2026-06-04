@@ -447,7 +447,7 @@ public partial class AppShell : Window
 
         if (result == Controls.LockScreenResult.SwitchUser)
         {
-            // 切換使用者 → 完整登出
+            // Admin 強制登出 → 完整登出
             _sessionService.UnlockSession();
             await ApplyLoginScreenLanguageAsync();
             _idleTimer.Stop();
@@ -457,7 +457,7 @@ public partial class AppShell : Window
         }
         else
         {
-            // 解鎖成功
+            // 解鎖成功（原使用者密碼解鎖 或 Admin 代理解鎖）
             _sessionService.UnlockSession();
             StartIdleTimerIfNeeded(); // 重新啟動 timer
 

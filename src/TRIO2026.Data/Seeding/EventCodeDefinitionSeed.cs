@@ -369,6 +369,78 @@ public static class EventCodeDefinitionSeed
                 Resolution = "系統帳號不可修改或刪除",
                 UserMessageKey = null, UserMessageFallback = null
             },
+            new()
+            {
+                Id = 82, Code = "INF-9006", Category = "Session", Severity = "Info",
+                Title = "Session Locked",
+                Description = "使用者閒置超時，系統自動鎖定畫面",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 83, Code = "INF-9007", Category = "Session", Severity = "Info",
+                Title = "Session Unlocked",
+                Description = "使用者輸入正確密碼，成功解鎖畫面",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 84, Code = "WRN-9008", Category = "Session", Severity = "Warning",
+                Title = "Lock Screen - Invalid Password",
+                Description = "鎖定畫面密碼驗證失敗",
+                Resolution = "多次失敗可能為未授權存取嘗試",
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 85, Code = "INF-9009", Category = "Session", Severity = "Info",
+                Title = "Lock Screen - Switch User",
+                Description = "使用者在鎖定畫面選擇切換使用者",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 86, Code = "INF-9010", Category = "Session", Severity = "Info",
+                Title = "Lock Screen - Passthrough Message",
+                Description = "鎖定期間顯示穿透訊息（如門板警告）",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 87, Code = "INF-9011", Category = "Session", Severity = "Info",
+                Title = "Lock Screen - Admin Auth Success",
+                Description = "管理員在鎖定畫面驗證成功，準備執行強制登出或代理解鎖",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 88, Code = "WRN-9012", Category = "Session", Severity = "Warning",
+                Title = "Lock Screen - Admin Auth Failed",
+                Description = "鎖定畫面 Admin 驗證失敗（密碼錯誤、帳號不存在或權限不足）",
+                Resolution = "確認使用 Admin 等級帳號登入",
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 89, Code = "WRN-9013", Category = "Session", Severity = "Warning",
+                Title = "Lock Screen - Admin Force Logout",
+                Description = "管理員強制登出另一使用者的鎖定中 Session（敏感操作）",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 91, Code = "WRN-9014", Category = "Session", Severity = "Warning",
+                Title = "Lock Screen - Admin Proxy Unlock",
+                Description = "管理員代理解鎖另一使用者的鎖定中 Session（敏感操作）",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
 
             // ══════════════════════════════════
             // 9xxx — Dynamic / Unknown（動態註冊保留區段）

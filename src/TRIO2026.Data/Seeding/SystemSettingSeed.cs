@@ -14,6 +14,7 @@ namespace TRIO2026.Data.Seeding;
 ///   - LoginUI        登入介面設定
 ///   - PasswordPolicy 密碼原則設定（依角色分級）
 ///   - System         系統全域設定
+///   - UsbSecurity    USB 資安專碟專用設定
 ///   - UserMenu       使用者選單相關設定
 /// 
 /// 製作者: Office of William
@@ -449,6 +450,91 @@ public static class SystemSettingSeed
                 Value = "logout",
                 Description = "Admin 鎖定畫面驗證後動作（logout=強制登出回登入頁, unlock=代理解鎖繼續操作）",
                 Remark = "✅ 已實作 — LockScreenOverlay 依此設定決定 Admin 介入後行為"
+            },
+
+            // ══════════════════════════════════════
+            // UsbSecurity — USB 資安專碟專用
+            // ══════════════════════════════════════
+            new()
+            {
+                Id = 42,
+                Category = "UsbSecurity",
+                Key = "usb_cybersecurity_enabled",
+                Value = "0",
+                Description = "USB 資安專碟專用總開關（0=停用, 1=啟用）。停用時所有子功能一律不執行",
+                Remark = "⭕ 待實作 — UsbSecurityService 總開關"
+            },
+            new()
+            {
+                Id = 43,
+                Category = "UsbSecurity",
+                Key = "usb_auto_format_on_insert",
+                Value = "0",
+                Description = "偵測到 USB 隨身碟插入時是否觸發快速格式化提示（0=否, 1=是）",
+                Remark = "⭕ 待實作 — 僅限 Removable Disk，嚴禁完整格式化，使用 exFAT"
+            },
+            new()
+            {
+                Id = 44,
+                Category = "UsbSecurity",
+                Key = "usb_format_confirm_delay_seconds",
+                Value = "2",
+                Description = "格式化確認對話框中「執行」按鈕的延遲出現秒數（防止誤觸）",
+                Remark = "⭕ 待實作 — 按鈕停等 N 秒後才可點選"
+            },
+            new()
+            {
+                Id = 45,
+                Category = "UsbSecurity",
+                Key = "usb_content_scan_enabled",
+                Value = "0",
+                Description = "是否掃描 USB 內容中已知有風險的檔案（0=否, 1=是）",
+                Remark = "⭕ 待實作 — 以副檔名黑白名單 + 精確檔名白名單為基礎（air-gapped，不接外部 CVE DB）"
+            },
+            new()
+            {
+                Id = 46,
+                Category = "UsbSecurity",
+                Key = "usb_scan_safe_extensions",
+                Value = ".pdf,.csv,.xlsx,.docx,.txt,.png,.jpg,.xml,.json",
+                Description = "安全檔案副檔名白名單（逗號分隔），掃描時放行",
+                Remark = "⭕ 待實作 — 依實際需求調整副檔名清單"
+            },
+            new()
+            {
+                Id = 47,
+                Category = "UsbSecurity",
+                Key = "usb_scan_block_extensions",
+                Value = ".exe,.bat,.cmd,.ps1,.vbs,.js,.msi,.scr,.dll,.sys,.com,.inf,.reg,.bin",
+                Description = "封鎖檔案副檔名黑名單（逗號分隔），偵測到即報警",
+                Remark = "⭕ 待實作 — .bin 可透過 usb_scan_allowed_files 排除"
+            },
+            new()
+            {
+                Id = 48,
+                Category = "UsbSecurity",
+                Key = "usb_read_background_check",
+                Value = "0",
+                Description = "GUI 讀取隨身碟時，背景檢查是否有非法格式檔案（0=否, 1=是）",
+                Remark = "⭕ 設定預留 — 實際掃描邏輯後續開發"
+            },
+            new()
+            {
+                Id = 49,
+                Category = "UsbSecurity",
+                Key = "usb_format_before_write",
+                Value = "0",
+                Description = "GUI 寫入隨身碟前是否執行快速格式化（0=否, 1=是）。若功能 1 已執行過則自動跳過",
+                Remark = "⭕ 設定預留 — 與功能 1 互斥邏輯後續開發"
+            },
+            new()
+            {
+                Id = 50,
+                Category = "UsbSecurity",
+                Key = "usb_scan_allowed_files",
+                Value = "",
+                Description = "儀器專用檔案白名單（逗號分隔精確檔名），優先於 block_extensions。例: firmware_v3.2.bin,calibration_data.bin",
+                Remark = "⭕ 待實作 — 允許特定檔名繞過副檔名黑名單封鎖"
             },
         };
     }

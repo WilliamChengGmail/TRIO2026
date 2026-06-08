@@ -394,4 +394,44 @@ public class SystemSettingService
                 StringComparer.OrdinalIgnoreCase);
         }
     }
+
+    // ═══════════════════════════════════════
+    // UsbSecurity 設定 — USB 資安專碟專用
+    // ═══════════════════════════════════════
+
+    /// <summary>USB 資安專碟專用總開關</summary>
+    public bool UsbCybersecurityEnabled
+        => GetLiveString("UsbSecurity", "usb_cybersecurity_enabled", "0") == "1";
+
+    /// <summary>偵測到 USB 插入時是否觸發快速格式化提示</summary>
+    public bool UsbAutoFormatOnInsert
+        => GetLiveString("UsbSecurity", "usb_auto_format_on_insert", "0") == "1";
+
+    /// <summary>格式化確認按鈕延遲出現秒數（防誤觸）</summary>
+    public int UsbFormatConfirmDelaySeconds
+        => int.TryParse(GetLiveString("UsbSecurity", "usb_format_confirm_delay_seconds", "2"), out var v) ? v : 2;
+
+    /// <summary>是否掃描 USB 內容中已知有風險的檔案</summary>
+    public bool UsbContentScanEnabled
+        => GetLiveString("UsbSecurity", "usb_content_scan_enabled", "0") == "1";
+
+    /// <summary>安全檔案副檔名白名單（逗號分隔）</summary>
+    public string UsbScanSafeExtensions
+        => GetLiveString("UsbSecurity", "usb_scan_safe_extensions", ".pdf,.csv,.xlsx,.docx,.txt,.png,.jpg,.xml,.json");
+
+    /// <summary>封鎖檔案副檔名黑名單（逗號分隔）</summary>
+    public string UsbScanBlockExtensions
+        => GetLiveString("UsbSecurity", "usb_scan_block_extensions", ".exe,.bat,.cmd,.ps1,.vbs,.js,.msi,.scr,.dll,.sys,.com,.inf,.reg,.bin");
+
+    /// <summary>儀器專用檔案白名單（逗號分隔精確檔名），優先於 block_extensions</summary>
+    public string UsbScanAllowedFiles
+        => GetLiveString("UsbSecurity", "usb_scan_allowed_files", "");
+
+    /// <summary>GUI 讀取隨身碟時背景檢查非法格式檔案（預留）</summary>
+    public bool UsbReadBackgroundCheck
+        => GetLiveString("UsbSecurity", "usb_read_background_check", "0") == "1";
+
+    /// <summary>GUI 寫入前是否執行快速格式化（預留，若功能 1 已執行則跳過）</summary>
+    public bool UsbFormatBeforeWrite
+        => GetLiveString("UsbSecurity", "usb_format_before_write", "0") == "1";
 }

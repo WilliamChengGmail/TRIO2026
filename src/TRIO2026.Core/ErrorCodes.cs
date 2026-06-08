@@ -84,4 +84,16 @@ public static class ErrorCodes
     public const string LockAdminAuthFailed = "WRN-9012";     // Admin 驗證失敗（密碼錯誤/權限不足）
     public const string LockAdminForceLogout = "WRN-9013";    // Admin 強制登出另一使用者
     public const string LockAdminProxyUnlock = "WRN-9014";    // Admin 代理解鎖另一使用者的 Session
+
+    // ── 4xxx USB Cybersecurity ──
+    public const string UsbDeviceInserted = "INF-4010";       // USB 儲存裝置插入偵測
+    public const string UsbFormatSuccess = "INF-4011";        // USB 快速格式化成功
+    public const string UsbFormatFailed = "WRN-4012";         // USB 快速格式化失敗
+    public const string UsbFormatCancelled = "INF-4013";      // 使用者取消格式化（含裝置拔除自動取消）
+    public const string UsbFormatBlockedNonRemovable = "WRN-4014"; // 非可卸除式裝置被阻擋格式化
+    public const string UsbScanClean = "INF-4015";            // USB 掃描通過（無威脅）
+    public const string UsbScanThreatDetected = "WRN-4016";   // USB 掃描偵測到風險檔案（黑名單命中）
+    public const string UsbScanSuspiciousFile = "WRN-4017";   // USB 掃描偵測到可疑檔案（不在白名單）
+    public const string UsbDeviceRemoved = "INF-4018";        // USB 儲存裝置拔除
+    public const string UsbGuestBlocked = "WRN-4019";         // Guest 模式下 USB 功能被禁用
 }

@@ -673,6 +673,54 @@ public static class LocalizedStringSeed
             "密码不能超过 72 个字符。",
             "パスワードは72文字以内で入力してください。"));
 
+        // ══════════════════════════════════════════
+        // UsbSecurity 模組 — USB 資安專碟專用
+        // ══════════════════════════════════════════
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatTitle",
+            "USB Dedicated Drive", "USB 專碟專用", "USB 专碟专用", "USB 専用ドライブ"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatDetected",
+            "Removable USB drive detected ({0})",
+            "偵測到 USB 隨身碟 ({0})",
+            "检测到 USB 随身碟 ({0})",
+            "USB リムーバブルドライブを検出 ({0})"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatWarning",
+            "To ensure information security, a quick format will be performed.\nThis operation will erase all data on the drive.",
+            "為確保資訊安全，即將執行快速格式化。\n此操作將清除隨身碟上所有資料。",
+            "为确保信息安全，即将执行快速格式化。\n此操作将清除随身碟上所有数据。",
+            "情報セキュリティのため、クイックフォーマットを実行します。\nこの操作によりドライブ上のすべてのデータが消去されます。"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatVolumeInfo",
+            "Volume: {0} ({1})", "磁碟區: {0} ({1})", "卷: {0} ({1})", "ボリューム: {0} ({1})"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatExecute",
+            "Format", "執行格式化", "执行格式化", "フォーマット実行"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatCountdown",
+            "Available in {0}s", "{0} 秒後啟用", "{0} 秒后启用", "{0}秒後に有効"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatSuccess",
+            "Quick format completed successfully.", "快速格式化完成。", "快速格式化完成。", "クイックフォーマットが完了しました。"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatFailed",
+            "Quick format failed. The drive may be write-protected or damaged.",
+            "快速格式化失敗。隨身碟可能有寫入保護或損壞。",
+            "快速格式化失败。随身碟可能有写入保护或损坏。",
+            "クイックフォーマットに失敗しました。ドライブが書き込み保護されているか、破損している可能性があります。"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "FormatBlockedNotRemovable",
+            "This drive is not a removable USB disk. Format operation blocked.",
+            "此磁碟非可卸除式 USB 隨身碟，已阻擋格式化操作。",
+            "此磁盘非可移除式 USB 随身碟，已阻止格式化操作。",
+            "このドライブはリムーバブル USB ディスクではありません。フォーマットをブロックしました。"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "ScanThreatDetected",
+            "Threat detected: {0}", "偵測到風險檔案: {0}", "检测到风险文件: {0}", "脅威を検出: {0}"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "ScanSuspicious",
+            "Suspicious file: {0}", "可疑檔案: {0}", "可疑文件: {0}", "不審なファイル: {0}"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "DeviceQueued",
+            "Another USB is being processed. This device is queued.",
+            "另一個 USB 正在處理中，此裝置已排入佇列等待。",
+            "另一个 USB 正在处理中，此设备已排入队列等待。",
+            "別の USB が処理中です。このデバイスはキューに追加されました。"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "GuestBlocked",
+            "USB functions are disabled in Guest mode. Please log in with an authorized account.",
+            "Guest 模式下所有 USB 功能已禁用，請以具權限的帳號登入後操作。",
+            "Guest 模式下所有 USB 功能已禁用，请以具权限的账号登录后操作。",
+            "ゲストモードでは USB 機能が無効です。権限のあるアカウントでログインしてください。"));
+
         return seeds;
     }
 

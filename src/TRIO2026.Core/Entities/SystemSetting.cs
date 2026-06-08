@@ -16,6 +16,7 @@ namespace TRIO2026.Core.Entities;
 ///   - Device         裝置運作模式設定
 ///   - PasswordPolicy 密碼原則設定（複雜度、長度）
 ///   - AccountMgmt    帳號管理設定（鎖定功能開關）
+///   - UsbSecurity    USB 資安專碟專用設定
 /// 
 /// 製作者: Office of William
 /// </summary>

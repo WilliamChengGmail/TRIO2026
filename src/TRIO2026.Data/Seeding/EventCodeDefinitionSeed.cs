@@ -443,6 +443,91 @@ public static class EventCodeDefinitionSeed
             },
 
             // ══════════════════════════════════
+            // 4xxx — USB Cybersecurity
+            // ══════════════════════════════════
+            new()
+            {
+                Id = 92, Code = "INF-4010", Category = "UsbSecurity", Severity = "Information",
+                Title = "USB Device Inserted",
+                Description = "USB 儲存裝置插入偵測（含佇列狀態）",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 93, Code = "INF-4011", Category = "UsbSecurity", Severity = "Information",
+                Title = "USB Quick Format Success",
+                Description = "USB 隨身碟快速格式化成功（exFAT）",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 94, Code = "WRN-4012", Category = "UsbSecurity", Severity = "Warning",
+                Title = "USB Quick Format Failed",
+                Description = "USB 隨身碟快速格式化失敗",
+                Resolution = "檢查隨身碟是否有寫入保護或損壞",
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 95, Code = "INF-4013", Category = "UsbSecurity", Severity = "Information",
+                Title = "USB Format Cancelled",
+                Description = "使用者取消格式化操作（含裝置拔除自動取消）",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 96, Code = "WRN-4014", Category = "UsbSecurity", Severity = "Warning",
+                Title = "USB Format Blocked - Non-Removable",
+                Description = "偵測到非可卸除式磁碟，已阻擋格式化操作（安全防護）",
+                Resolution = "僅限 Removable Disk 類型的 USB 隨身碟",
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 97, Code = "INF-4015", Category = "UsbSecurity", Severity = "Information",
+                Title = "USB Scan Clean",
+                Description = "USB 內容掃描通過，未發現威脅檔案",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 98, Code = "WRN-4016", Category = "UsbSecurity", Severity = "Warning",
+                Title = "USB Scan Threat Detected",
+                Description = "USB 掃描偵測到風險檔案（副檔名黑名單命中）",
+                Resolution = "移除隨身碟上的可疑檔案後重試",
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 99, Code = "WRN-4017", Category = "UsbSecurity", Severity = "Warning",
+                Title = "USB Scan Suspicious File",
+                Description = "USB 掃描偵測到可疑檔案（不在安全白名單中）",
+                Resolution = "確認檔案是否為合法用途，如需放行請加入安全名單",
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 100, Code = "INF-4018", Category = "UsbSecurity", Severity = "Information",
+                Title = "USB Device Removed",
+                Description = "USB 儲存裝置拔除",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 101, Code = "WRN-4019", Category = "UsbSecurity", Severity = "Warning",
+                Title = "USB Guest Mode Blocked",
+                Description = "Guest 模式下所有 USB 儲存功能被禁用",
+                Resolution = "請以具權限的帳號登入後操作",
+                UserMessageKey = "UsbSecurity.GuestBlocked",
+                UserMessageFallback = "USB functions are disabled in Guest mode."
+            },
+
+            // ══════════════════════════════════
             // 9xxx — Dynamic / Unknown（動態註冊保留區段）
             // ══════════════════════════════════
             new()

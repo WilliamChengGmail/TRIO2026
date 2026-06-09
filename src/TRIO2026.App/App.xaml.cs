@@ -131,6 +131,7 @@ public partial class App : Application
             services.AddSingleton<LocalizationService>();
             services.AddSingleton<EventLogService>();
             services.AddSingleton<EventLogArchiveService>();
+            services.AddSingleton<IUsbSecurityService, UsbSecurityService>();
 
             _serviceProvider = services.BuildServiceProvider();
 
@@ -153,6 +154,10 @@ public partial class App : Application
             // 載入系統設定（system_config.db）
             var sysSettings = _serviceProvider.GetRequiredService<SystemSettingService>();
             sysSettings.LoadAsync().GetAwaiter().GetResult();
+
+            // 啟動 USB 安全服務監聽
+            var usbSecurity = _serviceProvider.GetRequiredService<IUsbSecurityService>();
+            usbSecurity.StartListening();
 
             // 初始化多語系服務（受 DB 開關控制）
             var locService = _serviceProvider.GetRequiredService<LocalizationService>();

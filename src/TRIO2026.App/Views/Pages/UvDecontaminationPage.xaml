@@ -316,6 +316,11 @@
                            Foreground="{StaticResource TextSecondaryBrush}"
                            FontSize="11" VerticalAlignment="Center"
                            HorizontalAlignment="Left"/>
+                <TextBlock x:Name="CountdownText"
+                           FontSize="11" FontFamily="Segoe UI"
+                           Foreground="#26C6DA" VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Visibility="Collapsed"/>
                 <TextBlock Text="{Binding [Common.Ready], Source={x:Static svc:LocalizationService.Instance}}"
                            Foreground="#4CAF50" FontSize="11"
                            VerticalAlignment="Center"

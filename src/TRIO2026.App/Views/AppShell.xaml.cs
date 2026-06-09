@@ -75,6 +75,27 @@ public partial class AppShell : Window
         var policyService = serviceProvider.GetRequiredService<PasswordPolicyService>();
         var authForOverlay = serviceProvider.GetRequiredService<AuthService>();
         ChangePasswordOverlayHost.Initialize(authForOverlay, policyService);
+
+        // 初始化 USB 格式化確認面板
+        var usbSecurityService = serviceProvider.GetRequiredService<IUsbSecurityService>();
+        var locService = serviceProvider.GetRequiredService<LocalizationService>();
+        
+        UsbFormatConfirmHost.Completed += (s, confirmed) =>
+        {
+            if (UsbFormatConfirmHost.Tag is TRIO2026.App.Models.UsbDeviceInfo info)
+            {
+                usbSecurityService.ReportFormatResultAsync(info, confirmed);
+            }
+        };
+
+        usbSecurityService.FormatRequired += (s, info) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                UsbFormatConfirmHost.Tag = info;
+                UsbFormatConfirmHost.Show(locService, info, _systemSettings.UsbFormatConfirmDelaySeconds);
+            });
+        };
     }
 
     private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)

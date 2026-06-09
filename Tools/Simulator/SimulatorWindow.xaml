@@ -41,6 +41,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -117,8 +119,35 @@
             </StackPanel>
         </Border>
 
+        <!-- USB 模擬控制 -->
+        <Border Grid.Row="4" Background="#16213E" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="💾 USB 實體模擬 (OS 級)" FontSize="16" FontWeight="SemiBold"
+                           Foreground="#E0E0E0" Margin="0,0,0,12" />
+
+                <ComboBox x:Name="CmbUsbDisks" Height="32" FontSize="14" Margin="0,0,0,10"
+                          DisplayMemberPath="DisplayName" />
+                
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="BtnRefreshUsb" Grid.Column="0" Content="重新整理清單"
+                            Style="{StaticResource SimButton}"
+                            Background="#34495E" BorderBrush="#2C3E50"
+                            Padding="12,0" Margin="0,0,10,0" Height="36"
+                            Click="BtnRefreshUsb_Click" />
+                    <Button x:Name="BtnSimulateReplug" Grid.Column="1" Content="模擬實體拔插 (需 UAC)"
+                            Style="{StaticResource SimButton}"
+                            Background="#D35400" BorderBrush="#E67E22" Height="36"
+                            Click="BtnSimulateReplug_Click" />
+                </Grid>
+            </StackPanel>
+        </Border>
+
         <!-- 日誌 -->
-        <Border Grid.Row="4" Background="#16213E" CornerRadius="12" Padding="16">
+        <Border Grid.Row="5" Background="#16213E" CornerRadius="12" Padding="16">
             <DockPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
                     <TextBlock Text="📋 通訊日誌" FontSize="16" FontWeight="SemiBold"

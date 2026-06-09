@@ -17,6 +17,11 @@ Console.WriteLine($"專案根目錄: {projectRoot}");
 DatabaseInitializer.SetDatabaseDirectory(databaseDir);
 DatabaseInitializer.PasswordHasher = pwd => BCrypt.Net.BCrypt.HashPassword(pwd, workFactor: 12);
 
+// 建立日誌（寫入 Logs/db-init-logs/）
+var logDir = Path.Combine(projectRoot, "Logs", "db-init-logs");
+using var startupLog = new StartupLogger(logDir);
+startupLog.Info("DbInitializer", "獨立工具啟動", $"DatabaseDir={databaseDir}");
+
 try
 {
     await DatabaseInitializer.InitializeAllAsync();

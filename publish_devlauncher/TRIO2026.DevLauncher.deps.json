@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "TRIO2026.DevLauncher/1.0.0": {
+        "runtime": {
+          "TRIO2026.DevLauncher.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TRIO2026.DevLauncher/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

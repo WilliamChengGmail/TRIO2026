@@ -28,6 +28,8 @@
                 <controls:OverlayDialog x:Name="DialogOverlay" />
                 <controls:LoginOverlay x:Name="LoginOverlayHost" />
                 <controls:ChangePasswordOverlay x:Name="ChangePasswordOverlayHost" />
+                <controls:LockScreenOverlay x:Name="LockScreenHost" />
+                <controls:UsbFormatConfirmOverlay x:Name="UsbFormatConfirmHost" />
             </Grid>
         </Border>
     </Viewbox>

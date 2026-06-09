@@ -128,7 +128,7 @@
                 </StackPanel>
             </Button>
 
-            <Button Grid.Row="1" Grid.Column="1" Style="{StaticResource MenuButton}" Click="OnSettingClick">
+            <Button x:Name="BtnSetting" Grid.Row="1" Grid.Column="1" Style="{StaticResource MenuButton}" Click="OnSettingClick">
                 <StackPanel HorizontalAlignment="Center">
                     <TextBlock Text="🛠" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,8" />
                     <TextBlock Text="{Binding [Menu.Setting], Source={x:Static svc:LocalizationService.Instance}}"
@@ -140,7 +140,7 @@
                 </StackPanel>
             </Button>
 
-            <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+            <Button x:Name="BtnUV" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                     Style="{StaticResource MenuButton}" Click="OnUVClick">
                 <StackPanel HorizontalAlignment="Center">
                     <TextBlock Text="💡" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,6" />
@@ -159,6 +159,10 @@
             <Grid Margin="20,0">
                 <TextBlock Text="TRIO2026 v2026.1.0" FontSize="11" FontFamily="Segoe UI"
                            Foreground="#37474F" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                <TextBlock x:Name="CountdownText"
+                           FontSize="11" FontFamily="Segoe UI"
+                           Foreground="#26C6DA" VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Visibility="Collapsed" />
                 <TextBlock x:Name="StatusText"
                            Text="{Binding [Menu.StatusReady], Source={x:Static svc:LocalizationService.Instance}}"
                            FontSize="11" FontFamily="Segoe UI"

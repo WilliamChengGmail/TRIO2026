@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace TRIO2026.Simulator;
 
@@ -42,6 +43,7 @@ public partial class SimulatorWindow : Window
         _cts = new CancellationTokenSource();
         _ = Task.Run(() => StartTcpServerAsync(_cts.Token));
         AddLog("Simulator 已啟動");
+        RefreshUsbDisks();
     }
 
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -350,5 +352,123 @@ public partial class SimulatorWindow : Window
     private void BtnClearLog_Click(object sender, RoutedEventArgs e)
     {
         LogList.Items.Clear();
+    }
+
+    // ==========================================
+    // USB 實體拔插模擬 (OS 層級)
+    // ==========================================
+    
+    public class UsbDiskItem
+    {
+        public uint Number { get; set; } = 1;
+        public string FriendlyName { get; set; } = "";
+        [System.Text.Json.Serialization.JsonPropertyName("InstanceId")]
+        public string Path { get; set; } = "";
+        public string DisplayName => $"{FriendlyName}";
+    }
+
+    private void BtnRefreshUsb_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshUsbDisks();
+    }
+
+    private void RefreshUsbDisks()
+    {
+        try
+        {
+            CmbUsbDisks.Items.Clear();
+            AddLog("🔄 正在掃描 USB 隨身碟...");
+
+            var ps = new ProcessStartInfo("powershell")
+            {
+                Arguments = "-NoProfile -Command \"Get-PnpDevice -Class DiskDrive | Where-Object Status -eq 'OK' | Where-Object InstanceId -match '^USBSTOR' | Select-Object FriendlyName, InstanceId | ConvertTo-Json -Compress\"",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(ps);
+            if (process == null) return;
+
+            string json = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                AddLog("⚠️ 找不到任何 USB 隨身碟");
+                return;
+            }
+
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+            // ConvertTo-Json might return a single object or an array
+            List<UsbDiskItem> items = new();
+            if (json.StartsWith("["))
+            {
+                items = JsonSerializer.Deserialize<List<UsbDiskItem>>(json, options) ?? new();
+            }
+            else
+            {
+                var single = JsonSerializer.Deserialize<UsbDiskItem>(json, options);
+                if (single != null) items.Add(single);
+            }
+
+            foreach (var item in items)
+            {
+                CmbUsbDisks.Items.Add(item);
+            }
+
+            if (CmbUsbDisks.Items.Count > 0)
+                CmbUsbDisks.SelectedIndex = 0;
+
+            AddLog($"✅ 找到 {items.Count} 台 USB 隨身碟");
+        }
+        catch (Exception ex)
+        {
+            AddLog($"❌ 掃描 USB 失敗: {ex.Message}");
+        }
+    }
+
+    private async void BtnSimulateReplug_Click(object sender, RoutedEventArgs e)
+    {
+        if (CmbUsbDisks.SelectedItem is not UsbDiskItem selectedDisk)
+        {
+            MessageBox.Show("請先選擇要模擬的隨身碟！", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            BtnSimulateReplug.IsEnabled = false;
+            AddLog($"🔌 準備模擬拔插: {selectedDisk.DisplayName}");
+            AddLog("⚠️ 請在彈出的 UAC 視窗中點擊 [是] 允許執行...");
+
+            string script = $"-NoProfile -ExecutionPolicy Bypass -Command \"Disable-PnpDevice -InstanceId '{selectedDisk.Path}' -Confirm:0; Start-Sleep -Seconds 3; Enable-PnpDevice -InstanceId '{selectedDisk.Path}' -Confirm:0\"";
+
+            var ps = new ProcessStartInfo("powershell")
+            {
+                Arguments = script,
+                UseShellExecute = true,
+                Verb = "runas", // 要求管理員權限
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            await Task.Run(() =>
+            {
+                using var process = Process.Start(ps);
+                process?.WaitForExit();
+            });
+
+            AddLog("✅ 已成功完成 PnP 級別的隨身碟重啟！");
+            AddLog("👀 此時主程式應已捕捉到 WMI 事件並觸發安全掃描。");
+        }
+        catch (Exception ex)
+        {
+            AddLog($"❌ 模擬拔插失敗: {ex.Message}");
+        }
+        finally
+        {
+            BtnSimulateReplug.IsEnabled = true;
+        }
     }
 }

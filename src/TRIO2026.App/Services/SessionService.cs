@@ -65,4 +65,62 @@ public class SessionService
     {
         return IsAuthenticated && CurrentRole >= required;
     }
+
+    // ═══════════════════════════════════════
+    // 鎖定狀態管理
+    // ═══════════════════════════════════════
+
+    /// <summary>畫面是否已鎖定</summary>
+    public bool IsLocked { get; private set; }
+
+    /// <summary>鎖定時間</summary>
+    public DateTime? LockedAt { get; private set; }
+
+    /// <summary>畫面鎖定事件</summary>
+    public event EventHandler? SessionLocked;
+
+    /// <summary>畫面解鎖事件</summary>
+    public event EventHandler? SessionUnlocked;
+
+    /// <summary>鎖定畫面</summary>
+    public void LockSession()
+    {
+        if (IsLocked) return;
+        IsLocked = true;
+        LockedAt = DateTime.Now;
+        SessionLocked?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>解鎖畫面</summary>
+    public void UnlockSession()
+    {
+        if (!IsLocked) return;
+        IsLocked = false;
+        LockedAt = null;
+        SessionUnlocked?.Invoke(this, EventArgs.Empty);
+    }
+
+    // ═══════════════════════════════════════
+    // 訊息佇列（鎖定期間累積，解鎖後依序顯示）
+    // ═══════════════════════════════════════
+
+    private readonly Queue<PendingMessage> _pendingMessages = new();
+
+    /// <summary>是否有待處理的訊息</summary>
+    public bool HasPendingMessages => _pendingMessages.Count > 0;
+
+    /// <summary>鎖定期間排入待處理訊息</summary>
+    public void EnqueueMessage(string title, string message, string icon = "ℹ️")
+    {
+        _pendingMessages.Enqueue(new PendingMessage(title, message, icon, DateTime.Now));
+    }
+
+    /// <summary>取出下一筆待處理訊息</summary>
+    public PendingMessage? DequeueMessage()
+    {
+        return _pendingMessages.Count > 0 ? _pendingMessages.Dequeue() : null;
+    }
 }
+
+/// <summary>鎖定期間排隊等待的訊息</summary>
+public record PendingMessage(string Title, string Message, string Icon, DateTime EnqueuedAt);

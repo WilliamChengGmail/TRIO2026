@@ -71,6 +71,14 @@ public static class EventCodeDefinitionSeed
                 Resolution = null,
                 UserMessageKey = null, UserMessageFallback = null
             },
+            new()
+            {
+                Id = 6, Code = "WRN-1006", Category = "System", Severity = "Warning",
+                Title = "Abnormal Shutdown Detected",
+                Description = "偵測到上次非正常關閉（heartbeat 檔案殘留），可能因強制終止、系統崩潰或斷電",
+                Resolution = "檢查 Logs/crash-logs/ 是否有 fallback 日誌；確認系統穩定性",
+                UserMessageKey = null, UserMessageFallback = null
+            },
 
             // ══════════════════════════════════
             // 2xxx — Auth 認證相關
@@ -525,6 +533,46 @@ public static class EventCodeDefinitionSeed
                 Resolution = "請以具權限的帳號登入後操作",
                 UserMessageKey = "UsbSecurity.GuestBlocked",
                 UserMessageFallback = "USB functions are disabled in Guest mode."
+            },
+            new()
+            {
+                Id = 102, Code = "INF-4020", Category = "UsbSecurity", Severity = "Information",
+                Title = "USB Format Prompt Shown",
+                Description = "格式化確認面板已彈出，等待使用者回應",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 103, Code = "INF-4021", Category = "UsbSecurity", Severity = "Information",
+                Title = "USB Format User Confirmed",
+                Description = "使用者已確認執行格式化（格式化指令即將執行）",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 104, Code = "WRN-4022", Category = "UsbSecurity", Severity = "Warning",
+                Title = "USB Blocked - Not Authenticated",
+                Description = "未登入狀態下 USB 儲存裝置操作被攔截（安全防護）",
+                Resolution = "請先登入系統後再操作 USB 裝置",
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 105, Code = "WRN-4023", Category = "UsbSecurity", Severity = "Warning",
+                Title = "USB Blocked - Session Locked",
+                Description = "畫面鎖定（Session Timeout）時 USB 儲存裝置操作被攔截",
+                Resolution = "請先解鎖畫面後再操作 USB 裝置",
+                UserMessageKey = null, UserMessageFallback = null
+            },
+            new()
+            {
+                Id = 106, Code = "INF-4024", Category = "UsbSecurity", Severity = "Information",
+                Title = "USB Format Skipped - Already Clean",
+                Description = "USB 已經是目標檔案系統且無使用者檔案，跳過不必要的重複格式化",
+                Resolution = null,
+                UserMessageKey = null, UserMessageFallback = null
             },
 
             // ══════════════════════════════════

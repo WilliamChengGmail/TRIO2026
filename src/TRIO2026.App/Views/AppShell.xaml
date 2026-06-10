@@ -24,12 +24,13 @@
                 <!-- 頁面主機（切換頁面內容） -->
                 <ContentControl x:Name="PageHost" />
 
-                <!-- 共用 Overlay（在所有頁面上方） -->
+                <!-- 共用 Overlay（在所有頁面上方，Z-Order 由低到高） -->
                 <controls:OverlayDialog x:Name="DialogOverlay" />
                 <controls:LoginOverlay x:Name="LoginOverlayHost" />
                 <controls:ChangePasswordOverlay x:Name="ChangePasswordOverlayHost" />
-                <controls:LockScreenOverlay x:Name="LockScreenHost" />
                 <controls:UsbFormatConfirmOverlay x:Name="UsbFormatConfirmHost" />
+                <!-- LockScreen 必須在 UsbFormat 上方：鎖定時遮蔽 Format 面板，解鎖後自動恢復 -->
+                <controls:LockScreenOverlay x:Name="LockScreenHost" />
             </Grid>
         </Border>
     </Viewbox>

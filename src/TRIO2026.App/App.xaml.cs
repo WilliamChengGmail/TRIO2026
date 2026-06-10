@@ -18,6 +18,11 @@ public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
 
+    /// <summary>Heartbeat 檔案路徑 — 存在表示 App 正在執行中</summary>
+    private string? _heartbeatPath;
+    private DateTime _appStartTime;
+    private System.Windows.Threading.DispatcherTimer? _heartbeatTimer;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -55,10 +60,17 @@ public partial class App : Application
         // ProcessExit — 工作管理員關閉、系統登出等非正常結束
         AppDomain.CurrentDomain.ProcessExit += (s, e) =>
         {
-            Console.WriteLine("[App] ProcessExit detected — flushing logs");
-            EventLogService.Instance?.LogInfo("System", "App", ErrorCodes.AppShutdown,
-                "ProcessExit 偵測到程序結束");
-            if (EventLogService.Instance is IDisposable d) d.Dispose();
+            try
+            {
+                EventLogService.Instance?.LogInfo("System", "App", ErrorCodes.AppShutdown,
+                    "ProcessExit 偵測到程序結束");
+                if (EventLogService.Instance is IDisposable d) d.Dispose();
+            }
+            catch { }
+
+            // 清除 heartbeat + fallback 寫入檔案
+            CleanupHeartbeat();
+            WriteCrashFallbackLog("ProcessExit detected — possible forced shutdown");
         };
 
         // TaskScheduler 未觀察到的 Task 例外
@@ -139,6 +151,13 @@ public partial class App : Application
             var eventLog = _serviceProvider.GetRequiredService<EventLogService>();
             eventLog.SessionService = _serviceProvider.GetRequiredService<SessionService>();
             EventLogService.Instance = eventLog;
+
+            // ── 偵測上次是否非正常關閉（heartbeat 檔案殘留）──
+            _heartbeatPath = Path.Combine(baseDir, "Logs", ".app_running");
+            DetectAbnormalShutdown(eventLog);
+
+            // 寫入 heartbeat（標記 App 正在執行）
+            WriteHeartbeat();
 
             // 記錄啟動事件 + startup log 狀態
             eventLog.LogInfo("System", "App", ErrorCodes.AppStartup, "應用程式啟動",
@@ -230,13 +249,106 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         // 記錄關閉事件並 flush 日誌
-        EventLogService.Instance?.LogInfo("System", "App", ErrorCodes.AppShutdown, "應用程式關閉");
+        EventLogService.Instance?.LogInfo("System", "App", ErrorCodes.AppShutdown, "應用程式正常關閉");
 
         if (EventLogService.Instance is IDisposable disposable)
             disposable.Dispose();
 
+        // 清除 heartbeat — 表示正常結束
+        CleanupHeartbeat();
+
         _serviceProvider?.Dispose();
         base.OnExit(e);
+    }
+
+    /// <summary>偵測上次是否非正常關閉</summary>
+    private void DetectAbnormalShutdown(EventLogService eventLog)
+    {
+        if (_heartbeatPath == null || !File.Exists(_heartbeatPath)) return;
+
+        try
+        {
+            string content = File.ReadAllText(_heartbeatPath).Trim();
+            eventLog.LogWarning("System", "App",
+                ErrorCodes.AbnormalShutdownDetected,
+                "Abnormal Shutdown Detected",
+                $"PreviousSession={content}");
+        }
+        catch (Exception ex)
+        {
+            eventLog.LogWarning("System", "App",
+                ErrorCodes.AbnormalShutdownDetected,
+                "Abnormal Shutdown Detected",
+                $"HeartbeatReadError={ex.Message}");
+        }
+        finally
+        {
+            try { File.Delete(_heartbeatPath); } catch { }
+        }
+    }
+
+    /// <summary>寫入 heartbeat 檔案（標記 App 正在執行）並啟動定期更新</summary>
+    private void WriteHeartbeat()
+    {
+        try
+        {
+            if (_heartbeatPath == null) return;
+            var dir = Path.GetDirectoryName(_heartbeatPath);
+            if (dir != null) Directory.CreateDirectory(dir);
+
+            _appStartTime = DateTime.Now;
+            UpdateHeartbeatFile();
+
+            // 每 30 秒更新一次 LastAlive 時間戳
+            _heartbeatTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(30)
+            };
+            _heartbeatTimer.Tick += (s, e) => UpdateHeartbeatFile();
+            _heartbeatTimer.Start();
+        }
+        catch { }
+    }
+
+    /// <summary>更新 heartbeat 檔案內容（含最後存活時間）</summary>
+    private void UpdateHeartbeatFile()
+    {
+        try
+        {
+            if (_heartbeatPath == null) return;
+            var info = $"PID={Environment.ProcessId}, StartedAt={_appStartTime:yyyy-MM-dd HH:mm:ss}, LastAlive={DateTime.Now:yyyy-MM-dd HH:mm:ss}, Machine={Environment.MachineName}";
+            File.WriteAllText(_heartbeatPath, info);
+        }
+        catch { }
+    }
+
+    /// <summary>清除 heartbeat 檔案並停止計時器（表示正常結束）</summary>
+    private void CleanupHeartbeat()
+    {
+        try
+        {
+            _heartbeatTimer?.Stop();
+            _heartbeatTimer = null;
+            if (_heartbeatPath != null && File.Exists(_heartbeatPath))
+                File.Delete(_heartbeatPath);
+        }
+        catch { }
+    }
+
+    /// <summary>Fallback: 當 DB 不可用時寫入本機檔案</summary>
+    private void WriteCrashFallbackLog(string reason)
+    {
+        try
+        {
+            var logDir = Path.Combine(FindProjectRoot(), "Logs", "crash-logs");
+            Directory.CreateDirectory(logDir);
+            var logFile = Path.Combine(logDir, $"crash_{DateTime.Now:yyyyMMdd_HHmmss}.log");
+            var content = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {reason}\n" +
+                          $"PID={Environment.ProcessId}\n" +
+                          $"Machine={Environment.MachineName}\n";
+            File.WriteAllText(logFile, content);
+        }
+        catch { }
     }
 
     /// <summary>

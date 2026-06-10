@@ -433,42 +433,106 @@ public partial class SimulatorWindow : Window
     {
         if (CmbUsbDisks.SelectedItem is not UsbDiskItem selectedDisk)
         {
-            MessageBox.Show("請先選擇要模擬的隨身碟！", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Please select a USB drive first!", "Info", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
         try
         {
             BtnSimulateReplug.IsEnabled = false;
-            AddLog($"🔌 準備模擬拔插: {selectedDisk.DisplayName}");
-            AddLog("⚠️ 請在彈出的 UAC 視窗中點擊 [是] 允許執行...");
+            AddLog($"🔌 Simulating replug: {selectedDisk.DisplayName}");
 
-            string script = $"-NoProfile -ExecutionPolicy Bypass -Command \"Disable-PnpDevice -InstanceId '{selectedDisk.Path}' -Confirm:0; Start-Sleep -Seconds 3; Enable-PnpDevice -InstanceId '{selectedDisk.Path}' -Confirm:0\"";
+            // 三路分流：與 App 的 format 機制一致
+            bool isElevated = IsRunningAsAdmin();
 
-            var ps = new ProcessStartInfo("powershell")
+            if (isElevated)
             {
-                Arguments = script,
-                UseShellExecute = true,
-                Verb = "runas", // 要求管理員權限
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-
-            await Task.Run(() =>
+                // ── 路徑 1: 已提權 → 直接執行 ──
+                AddLog("▶ Route: Direct (Admin)");
+                await RunPnpDirect(selectedDisk.Path);
+            }
+            else if (await TRIO2026.Core.IPC.PipeClient.IsServiceAvailableAsync())
             {
-                using var process = Process.Start(ps);
-                process?.WaitForExit();
-            });
+                // ── 路徑 2: PrivilegedService 可用 → Named Pipe ──
+                AddLog("▶ Route: PrivilegedService (Pipe)");
+                var response = await TRIO2026.Core.IPC.PipeClient.SendRequestAsync(
+                    new TRIO2026.Core.IPC.PipeRequest
+                    {
+                        Command = TRIO2026.Core.IPC.PipeCommand.RestartPnp,
+                        InstanceId = selectedDisk.Path,
+                        CallerUser = "Simulator"
+                    });
 
-            AddLog("✅ 已成功完成 PnP 級別的隨身碟重啟！");
-            AddLog("👀 此時主程式應已捕捉到 WMI 事件並觸發安全掃描。");
+                if (response.Success)
+                    AddLog($"✅ PnP restart via service: {response.Output}");
+                else
+                    AddLog($"❌ PnP restart failed: {response.Error}");
+            }
+            else
+            {
+                // ── 路徑 3: 開發環境 fallback → UAC ──
+                AddLog("▶ Route: UAC Elevation (fallback)");
+                AddLog("⚠️ UAC prompt will appear...");
+                await RunPnpElevated(selectedDisk.Path);
+            }
+
+            AddLog("✅ PnP replug simulation completed.");
+            AddLog("👀 Main app should have detected WMI event.");
         }
         catch (Exception ex)
         {
-            AddLog($"❌ 模擬拔插失敗: {ex.Message}");
+            AddLog($"❌ Replug failed: {ex.Message}");
         }
         finally
         {
             BtnSimulateReplug.IsEnabled = true;
         }
+    }
+
+    /// <summary>已提權時直接執行 PnP 重啟</summary>
+    private async Task RunPnpDirect(string instanceId)
+    {
+        string script = $"-NoProfile -ExecutionPolicy Bypass -Command \"Disable-PnpDevice -InstanceId '{instanceId}' -Confirm:0; Start-Sleep -Seconds 3; Enable-PnpDevice -InstanceId '{instanceId}' -Confirm:0\"";
+        var psi = new ProcessStartInfo("powershell")
+        {
+            Arguments = script,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        await Task.Run(() =>
+        {
+            using var process = Process.Start(psi);
+            process?.WaitForExit();
+        });
+    }
+
+    /// <summary>未提權時使用 UAC fallback</summary>
+    private async Task RunPnpElevated(string instanceId)
+    {
+        string script = $"-NoProfile -ExecutionPolicy Bypass -Command \"Disable-PnpDevice -InstanceId '{instanceId}' -Confirm:0; Start-Sleep -Seconds 3; Enable-PnpDevice -InstanceId '{instanceId}' -Confirm:0\"";
+        var psi = new ProcessStartInfo("powershell")
+        {
+            Arguments = script,
+            UseShellExecute = true,
+            Verb = "runas",
+            WindowStyle = ProcessWindowStyle.Hidden
+        };
+        await Task.Run(() =>
+        {
+            using var process = Process.Start(psi);
+            process?.WaitForExit();
+        });
+    }
+
+    /// <summary>偵測當前是否以管理員權限執行</summary>
+    private static bool IsRunningAsAdmin()
+    {
+        try
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+        catch { return false; }
     }
 }

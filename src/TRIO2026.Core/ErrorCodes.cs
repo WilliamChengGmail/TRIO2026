@@ -22,6 +22,7 @@ public static class ErrorCodes
     public const string EventLogWriteFailure = "WRN-1003";
     public const string AppStartup = "INF-1004";
     public const string AppShutdown = "INF-1005";
+    public const string AbnormalShutdownDetected = "WRN-1006";  // 偵測到上次非正常關閉
 
     // ── 2xxx Auth ──
     public const string LoginFailed = "WRN-2001";
@@ -96,4 +97,9 @@ public static class ErrorCodes
     public const string UsbScanSuspiciousFile = "WRN-4017";   // USB 掃描偵測到可疑檔案（不在白名單）
     public const string UsbDeviceRemoved = "INF-4018";        // USB 儲存裝置拔除
     public const string UsbGuestBlocked = "WRN-4019";         // Guest 模式下 USB 功能被禁用
+    public const string UsbFormatPromptShown = "INF-4020";     // 格式化確認面板已彈出（等待使用者回應）
+    public const string UsbFormatUserConfirmed = "INF-4021";   // 使用者已確認執行格式化（格式化開始前）
+    public const string UsbNotAuthenticated = "WRN-4022";      // 未登入狀態下 USB 操作被攔截
+    public const string UsbSessionLocked = "WRN-4023";          // 畫面鎖定時 USB 操作被攔截
+    public const string UsbFormatSkipped = "INF-4024";           // USB 已是目標格式且無檔案，跳過格式化
 }

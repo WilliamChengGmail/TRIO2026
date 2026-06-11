@@ -159,11 +159,7 @@ public partial class App : Application
             // 寫入 heartbeat（標記 App 正在執行）
             WriteHeartbeat();
 
-            // 記錄啟動事件 + startup log 狀態
-            eventLog.LogInfo("System", "App", ErrorCodes.AppStartup, "應用程式啟動",
-                startupLog.HasErrors
-                    ? $"StartupLog=HasErrors, LogPath={startupLog.LogPath}"
-                    : $"StartupLog=OK, LogPath={startupLog.LogPath}");
+            // 啟動事件日誌延後到 sysSettings 載入後記錄（需讀取 UUID）
 
             // 啟動歸檔檢查
             var archiveService = _serviceProvider.GetRequiredService<EventLogArchiveService>();
@@ -173,6 +169,13 @@ public partial class App : Application
             // 載入系統設定（system_config.db）
             var sysSettings = _serviceProvider.GetRequiredService<SystemSettingService>();
             sysSettings.LoadAsync().GetAwaiter().GetResult();
+
+            // 確保 Installation UUID 已產生（首次啟動自動產生 + 硬體/OS 快照，後續僅讀取）
+            var installUuid = InstallationUuidService.EnsureUuid(sysSettings);
+            eventLog.LogInfo("System", "App", ErrorCodes.AppStartup, "應用程式啟動",
+                $"UUID={installUuid}, " + (startupLog.HasErrors
+                    ? $"StartupLog=HasErrors, LogPath={startupLog.LogPath}"
+                    : $"StartupLog=OK, LogPath={startupLog.LogPath}"));
 
             // 啟動 USB 安全服務監聽
             var usbSecurity = _serviceProvider.GetRequiredService<IUsbSecurityService>();

@@ -76,6 +76,14 @@ public partial class DataListPage : UserControl
         // 載入資料
         LoadRecords();
 
+        // 監聽語系切換 → 重繪列表（code-behind 產生的文字不會自動更新）
+        UserMenu.LanguageChanged += (s, e) =>
+        {
+            UpdateSelectButtonText();
+            UpdateScopeDisplay();
+            RenderList();
+        };
+
         // 埋點
         EventLogService.Instance?.LogNavigation("menu", "data");
     }
@@ -304,10 +312,10 @@ public partial class DataListPage : UserControl
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(16) });  // 色碼
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(90) });  // 日期
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(65) });  // 樣本數（含右間距）
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });  // 樣本數（含右間距，支援 4 位數）
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // 狀態
         if (showOperator)
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) }); // 操作員
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) }); // 操作員（18 字元）
 
         // 色碼點
         var dot = new Border
@@ -326,7 +334,7 @@ public partial class DataListPage : UserControl
         var dateTxt = new TextBlock
         {
             Text = FormatDateShort(r.ExperimentDate),
-            FontSize = 17, Foreground = (SolidColorBrush)FindResource("TextPrimaryBrush"),
+            FontSize = 19, Foreground = (SolidColorBrush)FindResource("TextPrimaryBrush"),
             VerticalAlignment = VerticalAlignment.Center
         };
         Grid.SetColumn(dateTxt, 1);
@@ -336,7 +344,7 @@ public partial class DataListPage : UserControl
         var smpTxt = new TextBlock
         {
             Text = $"{r.SampleCount}smp",
-            FontSize = 16, Foreground = (SolidColorBrush)FindResource("TextSecondaryBrush"),
+            FontSize = 18, Foreground = (SolidColorBrush)FindResource("TextSecondaryBrush"),
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 0, 8, 0)
         };
@@ -359,7 +367,7 @@ public partial class DataListPage : UserControl
         var statTxt = new TextBlock
         {
             Text = statusKey + (r.Status != "Completed" ? " ⚠" : ""),
-            FontSize = 16, Foreground = statusColor,
+            FontSize = 18, Foreground = statusColor,
             VerticalAlignment = VerticalAlignment.Center
         };
         Grid.SetColumn(statTxt, 3);
@@ -370,10 +378,11 @@ public partial class DataListPage : UserControl
         {
             var opTxt = new TextBlock
             {
-                Text = Truncate(r.OperatorUsername, 8),
-                FontSize = 16, Foreground = new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5)),
+                Text = Truncate(r.OperatorUsername, 18),
+                FontSize = 18, Foreground = new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5)),
                 VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Right
+                HorizontalAlignment = HorizontalAlignment.Right,
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
             Grid.SetColumn(opTxt, 4);
             grid.Children.Add(opTxt);

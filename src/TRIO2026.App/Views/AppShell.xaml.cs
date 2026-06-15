@@ -153,6 +153,10 @@ public partial class AppShell : Window
         switch (page)
         {
             case "login":
+                // 清除角色敏感的頁面快取（切換使用者後需重建）
+                _dataListPage = null;
+                _accountMgmtPage = null;
+                _menuPage = null;
                 _loginPage ??= CreateLoginPage();
                 _loginPage.RefreshDisplay();
                 PageHost.Content = _loginPage;
@@ -364,6 +368,7 @@ public partial class AppShell : Window
         var guestUser = LoadGuestUser();
         _sessionService.SetGuestSession(guestUser, _systemSettings.GuestAccountDisplayName);
         _menuPage = null; // 重新建立以刷新使用者資訊
+        _dataListPage = null; // 重新建立以反映權限變更
     }
 
     /// <summary>

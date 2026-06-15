@@ -40,6 +40,9 @@ public partial class UserMenuControl : UserControl
     /// <summary>自動關閉計時器</summary>
     private readonly DispatcherTimer _autoCloseTimer;
 
+    /// <summary>語系切換完成後觸發（供父頁面訂閱以重繪 code-behind 文字）</summary>
+    public event EventHandler? LanguageChanged;
+
     /// <summary>
     /// 使用者圖示是否可點擊（UV 運行時設為 false）
     /// </summary>
@@ -441,6 +444,9 @@ public partial class UserMenuControl : UserControl
 
             // 語系切換後更新手動設定的 UI 文字（如 BtnLogout.Tag）
             RefreshUserDisplay();
+
+            // 通知父頁面重繪 code-behind 產生的文字
+            LanguageChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 

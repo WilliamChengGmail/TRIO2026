@@ -75,7 +75,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="CompBd" Background="#1E2D4A"
                                 BorderBrush="#1A2742" BorderThickness="0,0,0,1"
-                                Padding="12,10">
+                                Padding="12,14">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -125,7 +125,13 @@
             <Setter Property="MinWidth" Value="48" />
             <Setter Property="MinHeight" Value="48" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="4,0,12,0" />
+            <Setter Property="LayoutTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1.6" ScaleY="1.6" />
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 

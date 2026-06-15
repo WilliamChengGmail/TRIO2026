@@ -24,7 +24,8 @@
             <StackPanel VerticalAlignment="Center">
                 <TextBlock x:Name="UserNameText" Text=""
                            FontSize="16" FontWeight="SemiBold"
-                           Foreground="{StaticResource TextPrimaryBrush}" />
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           MaxWidth="240" TextTrimming="CharacterEllipsis" />
                 <TextBlock x:Name="UserRoleText" Text=""
                            FontSize="13"
                            Foreground="{StaticResource TextSecondaryBrush}" />

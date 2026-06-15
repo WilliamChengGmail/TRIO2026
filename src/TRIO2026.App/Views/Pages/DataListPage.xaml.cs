@@ -304,10 +304,10 @@ public partial class DataListPage : UserControl
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(16) });  // 色碼
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(90) });  // 日期
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(55) });  // 樣本數
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(65) });  // 樣本數（含右間距）
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // 狀態
         if (showOperator)
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(70) }); // 操作員
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) }); // 操作員
 
         // 色碼點
         var dot = new Border
@@ -337,7 +337,8 @@ public partial class DataListPage : UserControl
         {
             Text = $"{r.SampleCount}smp",
             FontSize = 16, Foreground = (SolidColorBrush)FindResource("TextSecondaryBrush"),
-            VerticalAlignment = VerticalAlignment.Center
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 8, 0)
         };
         Grid.SetColumn(smpTxt, 2);
         grid.Children.Add(smpTxt);

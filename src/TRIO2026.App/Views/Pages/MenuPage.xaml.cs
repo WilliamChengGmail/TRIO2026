@@ -104,10 +104,13 @@ public partial class MenuPage : UserControl
         await _dialogOverlay.ShowAsync("Custom Program", "功能開發中...", "確定", OverlayDialogIcon.Info);
     }
 
-    private async void OnDataClick(object sender, RoutedEventArgs e)
+    private void OnDataClick(object sender, RoutedEventArgs e)
     {
         EventLogService.Instance.LogButtonClick("MenuPage", "Data");
-        await _dialogOverlay.ShowAsync("Data", "功能開發中...", "確定", OverlayDialogIcon.Info);
+
+        // Guest / local_operator 不可進入 Data（已在 ApplyGuestRestrictions 中處理按鈕停用）
+        var shell = Window.GetWindow(this) as AppShell;
+        shell?.NavigateTo("data");
     }
 
     private async void OnSettingClick(object sender, RoutedEventArgs e)

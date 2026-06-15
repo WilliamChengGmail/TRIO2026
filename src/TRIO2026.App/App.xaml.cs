@@ -27,6 +27,9 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // 註冊非 Unicode 編碼（Big5 = 950）— format 等 cmd 指令在繁中 Windows 輸出 Big5
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
         // 全域 Dispatcher 例外處理（結構化日誌 + 顯示 ErrorId）
         DispatcherUnhandledException += (s, ex) =>
         {

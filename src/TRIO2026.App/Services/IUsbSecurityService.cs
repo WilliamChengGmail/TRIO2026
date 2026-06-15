@@ -22,4 +22,8 @@ public interface IUsbSecurityService
 
     /// <summary>掃描指定的隨身碟內容，依據設定的黑白名單判斷是否有風險檔案</summary>
     Task<bool> ScanDeviceContentAsync(UsbDeviceInfo info);
+
+    /// <summary>對指定隨身碟執行快速格式化（exFAT）</summary>
+    /// <returns>(成功, 輸出訊息)</returns>
+    Task<(bool Success, string Output)> FormatDriveAsync(UsbDeviceInfo info);
 }

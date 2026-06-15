@@ -34,6 +34,7 @@ public partial class AppShell : Window
     private UvDecontaminationPage? _uvPage;
     private ServiceModePage? _serviceModePage;
     private AccountManagementPage? _accountMgmtPage;
+    private DataListPage? _dataListPage;
 
     public AppShell(IServiceProvider serviceProvider,
         SessionService sessionService,
@@ -139,7 +140,7 @@ public partial class AppShell : Window
         // 操作追蹤：頁面導航
         EventLogService.Instance.LogNavigation(fromPage, page);
 
-        // 資安守衛：Guest 帳號禁止進入受限頁面
+        // 資安守衛：Guest 帳號禁止進入受限頁面（data 允許進入但僅限個人資料）
         if (_sessionService.IsGuestLogin && page is "uv" or "service" or "accountMgmt")
         {
             EventLogService.Instance?.LogWarning("Auth", "AppShell",
@@ -184,6 +185,12 @@ public partial class AppShell : Window
                 _accountMgmtPage ??= CreateAccountMgmtPage();
                 _accountMgmtPage.RefreshUserDisplay();
                 PageHost.Content = _accountMgmtPage;
+                break;
+
+            case "data":
+                _dataListPage ??= CreateDataListPage();
+                _dataListPage.RefreshUserDisplay();
+                PageHost.Content = _dataListPage;
                 break;
         }
     }
@@ -231,6 +238,13 @@ public partial class AppShell : Window
         var policyService = _serviceProvider.GetRequiredService<PasswordPolicyService>();
         return new AccountManagementPage(_sessionService, _authService, _tokenService,
             _systemSettings, accountService, policyService);
+    }
+
+    private DataListPage CreateDataListPage()
+    {
+        return new DataListPage(_sessionService,
+            DialogOverlay, LoginOverlayHost, _authService, _tokenService,
+            _systemSettings, _serviceProvider);
     }
 
     // ═══════ 頁面事件處理 ═══════
@@ -482,6 +496,16 @@ public partial class AppShell : Window
             _sessionService.UnlockSession();
             StartIdleTimerIfNeeded(); // 重新啟動 timer
 
+            // Data 頁面後續：關閉中途對話框、強制關閉 USB 選擇器
+            UsbDriveSelectorHost.ForceClose();
+
+            // 若解鎖後當前頁面是 DataDetailPage，回到清單頁並重整資料
+            if (PageHost.Content is Pages.DataDetailPage)
+            {
+                if (_dataListPage != null) PageHost.Content = _dataListPage;
+                else NavigateTo("data");
+            }
+
             // 處理鎖定期間累積的訊息
             await ProcessPendingMessagesAsync();
         }
@@ -510,6 +534,9 @@ public partial class AppShell : Window
 
     /// <summary>取得 LockScreen Overlay 參考（供 UV 頁面穿透訊息使用）</summary>
     public Controls.LockScreenOverlay LockScreen => LockScreenHost;
+
+    /// <summary>取得 USB 碟選擇器參考（供 Data 頁面下載流程使用）</summary>
+    public Controls.UsbDriveSelector UsbDriveSelector => UsbDriveSelectorHost;
 
     // ═══════ Session Countdown Display ═══════
 
@@ -559,6 +586,17 @@ public partial class AppShell : Window
         if (PageHost.Content is Pages.UvDecontaminationPage uvPage)
         {
             var tb = uvPage.FindName("CountdownText") as System.Windows.Controls.TextBlock;
+            if (tb != null)
+            {
+                tb.Text = text;
+                tb.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        // DataListPage
+        if (PageHost.Content is Pages.DataListPage dataPage)
+        {
+            var tb = dataPage.FindName("CountdownText") as System.Windows.Controls.TextBlock;
             if (tb != null)
             {
                 tb.Text = text;

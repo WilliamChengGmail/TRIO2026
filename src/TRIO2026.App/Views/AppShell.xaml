@@ -29,7 +29,8 @@
                 <controls:LoginOverlay x:Name="LoginOverlayHost" />
                 <controls:ChangePasswordOverlay x:Name="ChangePasswordOverlayHost" />
                 <controls:UsbFormatConfirmOverlay x:Name="UsbFormatConfirmHost" />
-                <!-- LockScreen 必須在 UsbFormat 上方：鎖定時遮蔽 Format 面板，解鎖後自動恢復 -->
+                <controls:UsbDriveSelector x:Name="UsbDriveSelectorHost" />
+                <!-- LockScreen 必須在最上方：鎖定時遮蔽所有面板，解鎖後自動恢復 -->
                 <controls:LockScreenOverlay x:Name="LockScreenHost" />
             </Grid>
         </Border>

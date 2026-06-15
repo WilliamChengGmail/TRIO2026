@@ -1,7 +1,7 @@
 <Window x:Class="TRIO2026.Simulator.SimulatorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TRIO2026 Hardware Simulator" Width="480" Height="640"
+        Title="TRIO2026 Hardware Simulator" Width="480" Height="860" MinHeight="700"
         Background="#1A1A2E" ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen">
 
@@ -42,8 +42,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*" MinHeight="180" />
         </Grid.RowDefinitions>
 
         <!-- 標題 -->

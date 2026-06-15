@@ -536,6 +536,19 @@ public static class SystemSettingSeed
                 Description = "儀器專用檔案白名單（逗號分隔精確檔名），優先於 block_extensions。例: firmware_v3.2.bin,calibration_data.bin",
                 Remark = "✅ 已實作 — 允許特定檔名繞過副檔名黑名單封鎖"
             },
+
+            // ══════════════════════════════════════
+            // DataPage — 數據紀錄頁面設定
+            // ══════════════════════════════════════
+            new()
+            {
+                Id = 51,
+                Category = "DataPage",
+                Key = "data_list_layout",
+                Value = "card",
+                Description = "清單頁版面配置（card=卡片模式, compact=緊湊列表, table=表格模式）",
+                Remark = "⏳ 待實作 — DataListPage 讀取此值決定版面"
+            },
         };
     }
 }

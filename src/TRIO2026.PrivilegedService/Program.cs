@@ -1,3 +1,4 @@
+using System.Text;
 using TRIO2026.PrivilegedService;
 
 /// <summary>
@@ -13,6 +14,10 @@ using TRIO2026.PrivilegedService;
 /// 
 /// 製作者: Office of William
 /// </summary>
+
+// 註冊非 Unicode 編碼（Big5 = 950）— format 指令在繁中 Windows 輸出 Big5
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
 var builder = Host.CreateApplicationBuilder(args);
 
 // 啟用 Windows Service 支援（可同時作為 Console App 和 Windows Service 執行）

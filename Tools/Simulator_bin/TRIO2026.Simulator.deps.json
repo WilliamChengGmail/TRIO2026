@@ -8,18 +8,15 @@
     ".NETCoreApp,Version=v8.0": {
       "TRIO2026.Simulator/1.0.0": {
         "dependencies": {
-          "TRIO2026.Core": "1.0.0.0"
+          "TRIO2026.Core": "1.0.0"
         },
         "runtime": {
           "TRIO2026.Simulator.dll": {}
         }
       },
-      "TRIO2026.Core/1.0.0.0": {
+      "TRIO2026.Core/1.0.0": {
         "runtime": {
-          "TRIO2026.Core.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "TRIO2026.Core.dll": {}
         }
       }
     }
@@ -30,8 +27,8 @@
       "serviceable": false,
       "sha512": ""
     },
-    "TRIO2026.Core/1.0.0.0": {
-      "type": "reference",
+    "TRIO2026.Core/1.0.0": {
+      "type": "project",
       "serviceable": false,
       "sha512": ""
     }

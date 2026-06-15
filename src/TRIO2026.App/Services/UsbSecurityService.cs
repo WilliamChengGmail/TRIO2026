@@ -267,6 +267,31 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
         return Task.CompletedTask;
     }
 
+    /// <summary>對指定隨身碟執行快速格式化（exFAT），供 Data 下載流程主動呼叫</summary>
+    public async Task<(bool Success, string Output)> FormatDriveAsync(UsbDeviceInfo info)
+    {
+        EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+            ErrorCodes.UsbFormatUserConfirmed, "Data Export Format Requested",
+            $"{info.ToLogString()} | Action=QuickFormat, TargetFS=exFAT");
+
+        var result = await RunFormatCommandAsync(info.DriveLetter, "exFAT");
+
+        if (result.Success)
+        {
+            EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+                ErrorCodes.UsbFormatSuccess, "Data Export Format Success",
+                $"{info.ToLogString()} | Output={result.Output}");
+        }
+        else
+        {
+            EventLogService.Instance?.LogError("UsbSecurity", "UsbSecurityService",
+                ErrorCodes.UsbFormatFailed, "Data Export Format Failed",
+                $"{info.ToLogString()} | Output={result.Output}");
+        }
+
+        return result;
+    }
+
     public Task<bool> ScanDeviceContentAsync(UsbDeviceInfo info)
     {
         return Task.Run(() =>

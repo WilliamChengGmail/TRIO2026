@@ -102,4 +102,23 @@ public static class ErrorCodes
     public const string UsbNotAuthenticated = "WRN-4022";      // 未登入狀態下 USB 操作被攔截
     public const string UsbSessionLocked = "WRN-4023";          // 畫面鎖定時 USB 操作被攔截
     public const string UsbFormatSkipped = "INF-4024";           // USB 已是目標格式且無檔案，跳過格式化
+
+    // ── 10xxx Data Page ──
+    public const string DataRecordView = "INF-10001";             // 檢視紀錄詳情
+    public const string DataLayoutChanged = "INF-10002";          // 切換版面配置
+    public const string DataSelectMode = "INF-10003";             // 進入/離開多選模式
+    public const string DataAdminScopeChanged = "INF-10004";      // Admin 切換資料範圍
+    public const string DataFilterApplied = "INF-10005";          // 套用篩選
+    public const string DataExportStarted = "INF-10006";          // 匯出開始
+    public const string DataExportCompleted = "INF-10007";        // 匯出完成
+    public const string DataExportFailed = "WRN-10008";           // 匯出失敗
+    public const string DataExportCancelled = "INF-10009";        // 使用者取消匯出
+    public const string DataUsbRemoved = "WRN-10010";             // 匯出中 USB 被移除
+    public const string DataFormatSkipped = "INF-10011";          // USB 空碟略過格式化
+    public const string DataCyberBlocked = "WRN-10012";           // Cybersecurity 檢查未通過
+    public const string DataLoadError = "ERR-10013";              // 資料載入失敗
+
+    // ── 通用日誌 ──
+    public const string GeneralInfo = "INF-0001";                 // 通用資訊事件
+    public const string GeneralError = "ERR-0001";                // 通用錯誤事件
 }

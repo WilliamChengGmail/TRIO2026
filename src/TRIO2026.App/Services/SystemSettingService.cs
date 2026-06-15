@@ -434,4 +434,16 @@ public class SystemSettingService
     /// <summary>GUI 寫入前是否執行快速格式化（預留，若功能 1 已執行則跳過）</summary>
     public bool UsbFormatBeforeWrite
         => GetLiveString("UsbSecurity", "usb_format_before_write", "0") == "1";
+
+    // ═══════════════════════════════════════
+    // DataPage — 數據紀錄頁面
+    // ═══════════════════════════════════════
+
+    /// <summary>清單頁版面配置：card / compact / table</summary>
+    public string DataListLayout
+        => GetLiveString("DataPage", "data_list_layout", "card");
+
+    /// <summary>設定清單頁版面配置（寫入 DB）</summary>
+    public void SetDataListLayout(string layout)
+        => SetLiveString("DataPage", "data_list_layout", layout);
 }

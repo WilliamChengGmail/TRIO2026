@@ -721,6 +721,119 @@ public static class LocalizedStringSeed
             "Guest 模式下所有 USB 功能已禁用，请以具权限的账号登录后操作。",
             "ゲストモードでは USB 機能が無効です。権限のあるアカウントでログインしてください。"));
 
+        // ══════════════════════════════════════════
+        // Data 模組 — 數據紀錄頁面
+        // ══════════════════════════════════════════
+
+        // 清單頁 — 標題與導覽
+        seeds.AddRange(CreateGroup(ref id, "Data", "PageTitle",
+            "Data Records", "數據紀錄", "数据记录", "データ記録"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "NoRecords",
+            "No Records Found", "尚無紀錄", "暂无记录", "記録がありません"));
+
+        // 清單頁 — 篩選
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterMy",
+            "My Records", "我的紀錄", "我的记录", "自分の記録"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterAll",
+            "All Records", "全部紀錄", "全部记录", "すべての記録"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterByUser",
+            "By Operator", "依操作員", "按操作员", "オペレーター別"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterDateRange",
+            "Date Range", "日期範圍", "日期范围", "日付範囲"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterReportType",
+            "Report Type", "報告類型", "报告类型", "レポート種別"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterStatus",
+            "Status", "狀態", "状态", "ステータス"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterProgram",
+            "Program", "萃取程式", "萃取程序", "プログラム"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterAllOption",
+            "All", "全部", "全部", "すべて"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterApply",
+            "Apply", "套用", "应用", "適用"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterReset",
+            "Reset", "重設", "重置", "リセット"));
+
+        // 清單頁 — 卡片資訊
+        seeds.AddRange(CreateGroup(ref id, "Data", "Samples",
+            "samples", "個樣本", "个样本", "サンプル"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "StatusCompleted",
+            "Completed", "完成", "完成", "完了"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "StatusError",
+            "Error", "錯誤", "错误", "エラー"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "StatusAborted",
+            "Aborted", "已中止", "已中止", "中止"));
+
+        // 清單頁 — 多選與下載
+        seeds.AddRange(CreateGroup(ref id, "Data", "Select",
+            "Select", "選取", "选取", "選択"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "CancelSelect",
+            "Cancel", "取消選取", "取消选取", "選択解除"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DownloadSelected",
+            "Download Selected ({0})", "下載選取項目 ({0})", "下载选取项目 ({0})", "選択をダウンロード ({0})"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DownloadConfirm",
+            "Download {0} records?", "確認下載 {0} 筆紀錄？", "确认下载 {0} 笔记录？", "{0}件の記録をダウンロードしますか？"));
+
+        // 清單頁 — 版面配置
+        seeds.AddRange(CreateGroup(ref id, "Data", "LayoutCard",
+            "Card", "卡片", "卡片", "カード"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "LayoutCompact",
+            "Compact", "緊湊", "紧凑", "コンパクト"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "LayoutTable",
+            "Table", "表格", "表格", "テーブル"));
+
+        // 詳情頁
+        seeds.AddRange(CreateGroup(ref id, "Data", "DetailTitle",
+            "Report Detail", "報告詳情", "报告详情", "レポート詳細"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DetailSetting",
+            "Experiment Settings", "實驗設定", "实验设定", "実験設定"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DetailResults",
+            "Sample Results", "樣本結果", "样本结果", "サンプル結果"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DetailAudit",
+            "Audit Trail", "操作紀錄", "操作记录", "操作履歴"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DetailDownload",
+            "Download", "下載", "下载", "ダウンロード"));
+
+        // USB 選擇器
+        seeds.AddRange(CreateGroup(ref id, "Data", "UsbSelect",
+            "Select USB Drive", "選擇目標 USB 隨身碟", "选择目标 USB 随身碟", "USB ドライブを選択"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "UsbNone",
+            "Please insert USB drive", "請插入 USB 隨身碟", "请插入 USB 随身碟", "USB ドライブを挿入してください"));
+
+        // 下載流程
+        seeds.AddRange(CreateGroup(ref id, "Data", "UsbPreparing",
+            "Preparing USB...", "準備 USB 中...", "准备 USB 中...", "USB 準備中..."));
+        seeds.AddRange(CreateGroup(ref id, "Data", "Exporting",
+            "Exporting...", "匯出中...", "导出中...", "エクスポート中..."));
+        seeds.AddRange(CreateGroup(ref id, "Data", "ExportingCurrent",
+            "Generating: {0}", "正在產生: {0}", "正在生成: {0}", "生成中: {0}"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DownloadDone",
+            "Download Complete", "下載完成", "下载完成", "ダウンロード完了"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DownloadDoneMsg",
+            "Exported {0} reports to {1}", "已匯出 {0} 筆報告至 {1}", "已导出 {0} 笔报告至 {1}", "{0}件のレポートを{1}にエクスポートしました"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DownloadFail",
+            "Download Failed", "下載失敗", "下载失败", "ダウンロード失敗"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "DownloadFailSpace",
+            "Insufficient USB space.\nRequired: {0} / Available: {1}",
+            "USB 空間不足。\n需要: {0} / 可用: {1}",
+            "USB 空间不足。\n需要: {0} / 可用: {1}",
+            "USB 容量不足。\n必要: {0} / 空き: {1}"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "CyberBlocked",
+            "Security Check Failed", "安全檢查未通過", "安全检查未通过", "セキュリティチェック失敗"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FormatSkipped",
+            "USB empty, format skipped", "USB 為空，略過格式化", "USB 为空，跳过格式化", "USB が空のため、フォーマットをスキップ"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FormatConfirm",
+            "USB has existing content. Format will erase all data.\nProceed?",
+            "USB 有既有內容，格式化後將清除所有資料。\n確定繼續？",
+            "USB 有既有内容，格式化后将清除所有数据。\n确定继续？",
+            "USB に既存データがあります。フォーマットするとすべてのデータが消去されます。\n続行しますか？"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "UsbRemoved",
+            "USB removed during export", "USB 已在匯出過程中移除", "USB 已在导出过程中移除", "エクスポート中に USB が取り外されました"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "UsbRemovedMsg",
+            "Completed: {0} / {1}\nInterrupted at: {2}",
+            "已完成: {0} / {1} 筆\n中斷於: {2}",
+            "已完成: {0} / {1} 笔\n中断于: {2}",
+            "完了: {0} / {1}\n中断: {2}"));
+
         return seeds;
     }
 

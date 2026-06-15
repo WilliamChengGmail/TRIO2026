@@ -131,7 +131,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="70"/>  <!-- 頂部列 -->
+            <RowDefinition Height="76"/>  <!-- 頂部列 -->
             <RowDefinition Height="Auto"/> <!-- 篩選列 (Admin) -->
             <RowDefinition Height="*"/>    <!-- 清單內容 -->
             <RowDefinition Height="Auto"/> <!-- 底部下載列 (多選模式) -->
@@ -140,7 +140,7 @@
 
         <!-- ═══ 頂部列 ═══ -->
         <Border Grid.Row="0" Background="#15203A" BorderBrush="#1E3050" BorderThickness="0,0,0,1">
-            <Grid Margin="16,0,280,0">
+            <Grid Margin="16,0,200,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>   <!-- 標題 -->
                     <ColumnDefinition Width="Auto"/> <!-- 版面切換 -->
@@ -152,7 +152,8 @@
                            Text="{Binding [Data.PageTitle], Source={x:Static svc:LocalizationService.Instance}}"
                            FontSize="24" FontWeight="Bold" FontFamily="Segoe UI"
                            Foreground="{StaticResource TextPrimaryBrush}"
-                           VerticalAlignment="Center" />
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
 
                 <!-- 版面切換 -->
                 <Button x:Name="BtnLayoutSwitch" Grid.Column="1"

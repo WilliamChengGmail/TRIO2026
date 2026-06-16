@@ -39,6 +39,10 @@ public partial class DataListPage : UserControl
     private DispatcherTimer? _longPressTimer;
     private int _longPressTargetId;
 
+    // Table 排序
+    private string _tableSortColumn = "date";
+    private bool _tableSortAscending = false; // 預設降冪（最新在前）
+
     // 篩選
     private string _filterReportType = "";
     private string _filterStatus = "";
@@ -177,16 +181,20 @@ public partial class DataListPage : UserControl
 
         var isAdmin = _sessionService.CurrentRole == RoleLevel.Admin;
 
-        foreach (var r in _records)
+        // Table 模式需先排序
+        if (_currentLayout == "table") ApplyTableSort();
+
+        for (int i = 0; i < _records.Count; i++)
         {
+            var r = _records[i];
             switch (_currentLayout)
             {
                 case "compact":
                     ListContainer.Children.Add(BuildCompactItem(r, isAdmin));
                     break;
                 case "table":
-                    // Table 模式先用 compact，後續擴充
-                    ListContainer.Children.Add(BuildCompactItem(r, isAdmin));
+                    if (i == 0) ListContainer.Children.Add(BuildTableHeader(isAdmin));
+                    ListContainer.Children.Add(BuildTableRow(r, isAdmin, i % 2 == 1));
                     break;
                 default:
                     ListContainer.Children.Add(BuildCardItem(r, isAdmin));
@@ -400,6 +408,276 @@ public partial class DataListPage : UserControl
         btn.PreviewTouchDown += (s, e) => StartLongPress(r.Id);
         btn.PreviewTouchUp += (s, e) => CancelLongPress();
         return btn;
+    }
+
+    // ═══════════════════════════════════════
+    // Table 模式
+    // ═══════════════════════════════════════
+
+    /// <summary>Table 模式 — 表頭列（可點擊排序）</summary>
+    private UIElement BuildTableHeader(bool showOperator)
+    {
+        var loc = LocalizationService.Instance;
+        var grid = new Grid { Background = new SolidColorBrush(Color.FromRgb(0x0D, 0x17, 0x2A)) };
+
+        // 欄位定義
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) }); // 日期
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(90) });  // 類型
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });  // 樣本
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // 狀態
+        if (showOperator)
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) }); // 操作員
+
+        var headers = new (string key, string col, int idx)[]
+        {
+            (loc["Data.HeaderDate"],     "date",     0),
+            (loc["Data.HeaderType"],     "type",     1),
+            (loc["Data.HeaderSamples"],  "samples",  2),
+            (loc["Data.HeaderStatus"],   "status",   3),
+        };
+
+        foreach (var (text, col, idx) in headers)
+        {
+            var sortIndicator = _tableSortColumn == col
+                ? (_tableSortAscending ? " ▲" : " ▼")
+                : "";
+            var btn = new Button
+            {
+                Content = text + sortIndicator,
+                Tag = col,
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = _tableSortColumn == col
+                    ? new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5))
+                    : new SolidColorBrush(Color.FromRgb(0x8B, 0x9D, 0xBF)),
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                HorizontalContentAlignment = HorizontalAlignment.Left,
+                Padding = new Thickness(8, 10, 4, 10),
+            };
+            btn.Click += OnTableHeaderClick;
+            Grid.SetColumn(btn, idx);
+            grid.Children.Add(btn);
+        }
+
+        if (showOperator)
+        {
+            var sortIndicator = _tableSortColumn == "operator"
+                ? (_tableSortAscending ? " ▲" : " ▼")
+                : "";
+            var opBtn = new Button
+            {
+                Content = loc["Data.HeaderOperator"] + sortIndicator,
+                Tag = "operator",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = _tableSortColumn == "operator"
+                    ? new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5))
+                    : new SolidColorBrush(Color.FromRgb(0x8B, 0x9D, 0xBF)),
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                HorizontalContentAlignment = HorizontalAlignment.Left,
+                Padding = new Thickness(8, 10, 4, 10),
+            };
+            opBtn.Click += OnTableHeaderClick;
+            Grid.SetColumn(opBtn, 4);
+            grid.Children.Add(opBtn);
+        }
+
+        // 底部分隔線
+        var border = new Border
+        {
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5)),
+            BorderThickness = new Thickness(0, 0, 0, 2),
+            Child = grid
+        };
+        return border;
+    }
+
+    /// <summary>Table 模式 — 資料列</summary>
+    private UIElement BuildTableRow(DataRecordItem r, bool showOperator, bool isAltRow)
+    {
+        var loc = LocalizationService.Instance;
+        var bgColor = isAltRow
+            ? Color.FromRgb(0x16, 0x22, 0x3A)
+            : Color.FromRgb(0x1E, 0x2D, 0x4A);
+
+        var grid = new Grid();
+
+        // 欄位定義（與表頭一致）
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) }); // 日期
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(90) });  // 類型
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });  // 樣本
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // 狀態
+        if (showOperator)
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) }); // 操作員
+
+        // 日期
+        var dateTxt = new TextBlock
+        {
+            Text = FormatDateShort(r.ExperimentDate),
+            FontSize = 16, Foreground = (SolidColorBrush)FindResource("TextPrimaryBrush"),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(8, 0, 4, 0)
+        };
+        Grid.SetColumn(dateTxt, 0);
+        grid.Children.Add(dateTxt);
+
+        // 類型（色碼 + 縮寫）
+        var typeSp = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
+        var dot = new Border
+        {
+            Width = 8, Height = 8, CornerRadius = new CornerRadius(4),
+            Background = r.ReportType == "IntelliPlex"
+                ? new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5))
+                : new SolidColorBrush(Color.FromRgb(0xFF, 0xA7, 0x26)),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 6, 0)
+        };
+        typeSp.Children.Add(dot);
+        typeSp.Children.Add(new TextBlock
+        {
+            Text = r.ReportType == "IntelliPlex" ? "IPlex" : "QPlex",
+            FontSize = 14,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x8B, 0x9D, 0xBF)),
+            VerticalAlignment = VerticalAlignment.Center
+        });
+        Grid.SetColumn(typeSp, 1);
+        grid.Children.Add(typeSp);
+
+        // 樣本數
+        var smpTxt = new TextBlock
+        {
+            Text = $"{r.SampleCount}",
+            FontSize = 16, Foreground = (SolidColorBrush)FindResource("TextSecondaryBrush"),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        Grid.SetColumn(smpTxt, 2);
+        grid.Children.Add(smpTxt);
+
+        // 狀態
+        var statusColor = r.Status switch
+        {
+            "Error" => new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)),
+            "Aborted" => new SolidColorBrush(Color.FromRgb(0xFF, 0xA7, 0x26)),
+            _ => new SolidColorBrush(Color.FromRgb(0x66, 0xBB, 0x6A))
+        };
+        var statusKey = r.Status switch
+        {
+            "Error" => loc["Data.StatusError"],
+            "Aborted" => loc["Data.StatusAborted"],
+            _ => loc["Data.StatusCompleted"]
+        };
+        var statTxt = new TextBlock
+        {
+            Text = statusKey + (r.Status != "Completed" ? " ⚠" : ""),
+            FontSize = 16, Foreground = statusColor,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(8, 0, 0, 0)
+        };
+        Grid.SetColumn(statTxt, 3);
+        grid.Children.Add(statTxt);
+
+        // 操作員
+        if (showOperator)
+        {
+            var opTxt = new TextBlock
+            {
+                Text = Truncate(r.OperatorUsername, 14),
+                FontSize = 14, Foreground = new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5)),
+                VerticalAlignment = VerticalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Margin = new Thickness(4, 0, 8, 0)
+            };
+            Grid.SetColumn(opTxt, 4);
+            grid.Children.Add(opTxt);
+        }
+
+        if (_isSelectMode)
+        {
+            return BuildSelectableWrapper(r.Id, grid);
+        }
+
+        var btn = new Button
+        {
+            Content = grid,
+            Tag = r.Id,
+            Cursor = Cursors.Hand,
+            Template = CreateTableRowTemplate(bgColor),
+        };
+        btn.Click += OnRecordClick;
+        btn.PreviewMouseLeftButtonDown += (s, e) => StartLongPress(r.Id);
+        btn.PreviewMouseLeftButtonUp += (s, e) => CancelLongPress();
+        btn.PreviewTouchDown += (s, e) => StartLongPress(r.Id);
+        btn.PreviewTouchUp += (s, e) => CancelLongPress();
+        return btn;
+    }
+
+    /// <summary>Table 行的 ControlTemplate（背景 + 按壓效果）</summary>
+    private static ControlTemplate CreateTableRowTemplate(Color bgColor)
+    {
+        var template = new ControlTemplate(typeof(Button));
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.SetValue(Border.BackgroundProperty, new SolidColorBrush(bgColor));
+        border.SetValue(Border.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(0x1A, 0x27, 0x42)));
+        border.SetValue(Border.BorderThicknessProperty, new Thickness(0, 0, 0, 1));
+        border.SetValue(Border.PaddingProperty, new Thickness(0, 10, 0, 10));
+        border.AppendChild(new FrameworkElementFactory(typeof(ContentPresenter)));
+        template.VisualTree = border;
+
+        // 按壓效果
+        var trigger = new Trigger { Property = Button.IsPressedProperty, Value = true };
+        trigger.Setters.Add(new Setter(Border.BackgroundProperty,
+            new SolidColorBrush(Color.FromRgb(0x2A, 0x45, 0x70)), "border"));
+        // 需要命名才能在 Trigger 中引用
+        border.Name = "border";
+        template.VisualTree = border;
+        template.Triggers.Add(trigger);
+
+        return template;
+    }
+
+    /// <summary>Table 表頭點擊排序</summary>
+    private void OnTableHeaderClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string col)
+        {
+            if (_tableSortColumn == col)
+                _tableSortAscending = !_tableSortAscending;
+            else
+            {
+                _tableSortColumn = col;
+                _tableSortAscending = col == "date" ? false : true; // 日期預設降冪
+            }
+            RenderList();
+        }
+    }
+
+    /// <summary>套用 Table 排序到 _records</summary>
+    private void ApplyTableSort()
+    {
+        _records = _tableSortColumn switch
+        {
+            "date" => _tableSortAscending
+                ? _records.OrderBy(r => r.ExperimentDate).ToList()
+                : _records.OrderByDescending(r => r.ExperimentDate).ToList(),
+            "type" => _tableSortAscending
+                ? _records.OrderBy(r => r.ReportType).ToList()
+                : _records.OrderByDescending(r => r.ReportType).ToList(),
+            "samples" => _tableSortAscending
+                ? _records.OrderBy(r => r.SampleCount).ToList()
+                : _records.OrderByDescending(r => r.SampleCount).ToList(),
+            "status" => _tableSortAscending
+                ? _records.OrderBy(r => r.Status).ToList()
+                : _records.OrderByDescending(r => r.Status).ToList(),
+            "operator" => _tableSortAscending
+                ? _records.OrderBy(r => r.OperatorUsername).ToList()
+                : _records.OrderByDescending(r => r.OperatorUsername).ToList(),
+            _ => _records
+        };
     }
 
     /// <summary>多選模式包裝：CheckBox + 內容</summary>

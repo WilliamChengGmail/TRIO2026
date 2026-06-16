@@ -781,6 +781,18 @@ public static class LocalizedStringSeed
         seeds.AddRange(CreateGroup(ref id, "Data", "LayoutTable",
             "Table", "表格", "表格", "テーブル"));
 
+        // 清單頁 — 表格表頭
+        seeds.AddRange(CreateGroup(ref id, "Data", "HeaderDate",
+            "Date", "日期", "日期", "日付"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "HeaderType",
+            "Type", "類型", "类型", "タイプ"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "HeaderSamples",
+            "Samples", "樣本", "样本", "サンプル"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "HeaderStatus",
+            "Status", "狀態", "状态", "ステータス"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "HeaderOperator",
+            "Operator", "操作員", "操作员", "オペレーター"));
+
         // 詳情頁
         seeds.AddRange(CreateGroup(ref id, "Data", "DetailTitle",
             "Report Detail", "報告詳情", "报告详情", "レポート詳細"));

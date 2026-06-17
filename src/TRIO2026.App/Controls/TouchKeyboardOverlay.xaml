@@ -161,11 +161,16 @@
         </Border>
 
         <!-- 隱藏焦點接收器：攔截實體鍵盤輸入 -->
+        <!-- InputMethod.IsInputMethodEnabled="False" 停用 IME，
+             防止中文輸入法（注音/倉頡等）攔截 Shift 鍵做中英切換，
+             確保所有按鍵原生傳遞到 WPF PreviewKeyDown/PreviewKeyUp -->
         <TextBox x:Name="FocusCatcher"
                  Opacity="0" IsHitTestVisible="False"
                  Focusable="True" IsReadOnly="False"
                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                 InputMethod.IsInputMethodEnabled="False"
                  PreviewTextInput="FocusCatcher_PreviewTextInput"
-                 PreviewKeyDown="FocusCatcher_PreviewKeyDown" />
+                 PreviewKeyDown="FocusCatcher_PreviewKeyDown"
+                 PreviewKeyUp="FocusCatcher_PreviewKeyUp" />
     </Grid>
 </UserControl>

@@ -234,6 +234,40 @@
             </Grid>
         </Border>
 
+        <!-- ═══ Operator 篩選彈出視窗 ═══ -->
+        <Popup x:Name="OperatorFilterPopup" StaysOpen="False" PlacementTarget="{Binding ElementName=BtnScopeToggle}" Placement="Bottom" AllowsTransparency="True">
+            <Border Background="#1E2D4A" BorderBrush="#2A3D5E" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,8,0,8">
+                <StackPanel Width="260">
+                    <Button Content="{Binding [Data.FilterMy], Source={x:Static svc:LocalizationService.Instance}}" 
+                            Style="{StaticResource ToolbarButton}" 
+                            Click="OnFilterMyRecordsClick" 
+                            HorizontalContentAlignment="Left" />
+                    <Button Content="{Binding [Data.FilterAll], Source={x:Static svc:LocalizationService.Instance}}" 
+                            Style="{StaticResource ToolbarButton}" 
+                            Click="OnFilterAllRecordsClick" 
+                            HorizontalContentAlignment="Left" />
+                    <Border Height="1" Background="#2A3D5E" Margin="0,8"/>
+                    <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="OperatorFilterItemsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Username}" 
+                                              IsChecked="{Binding IsSelected}" 
+                                              Foreground="{StaticResource TextPrimaryBrush}" 
+                                              Margin="8,8" FontSize="18"
+                                              Click="OnOperatorCheckboxClick">
+                                        <CheckBox.LayoutTransform>
+                                            <ScaleTransform ScaleX="1.3" ScaleY="1.3"/>
+                                        </CheckBox.LayoutTransform>
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+        </Popup>
+
         <!-- ═══ 共用使用者選單 ═══ -->
         <controls:UserMenuControl x:Name="UserMenu" Grid.RowSpan="5"
                                   ShowHomeButton="True"/>

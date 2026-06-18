@@ -11,6 +11,9 @@ using TRIO2026.Core;
 using TRIO2026.Core.Enums;
 using TRIO2026.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace TRIO2026.App.Views.Pages;
 
@@ -33,7 +36,10 @@ public partial class DataListPage : UserControl
     // 狀態
     private string _currentLayout = "card"; // card, compact, table
     private bool _isSelectMode;
-    private bool _isAdminScopeAll = true; // Admin 預設顯示全部
+    private OperatorFilterMode _operatorFilterMode = OperatorFilterMode.All;
+    private readonly ObservableCollection<OperatorFilterItem> _operatorFilterList = new();
+    private bool _operatorsLoaded = false;
+
     private readonly HashSet<int> _selectedIds = new();
     private List<DataRecordItem> _records = new();
     private DispatcherTimer? _longPressTimer;
@@ -47,7 +53,6 @@ public partial class DataListPage : UserControl
     private string _filterReportType = "";
     private string _filterStatus = "";
     private string _filterProgram = "";
-    private int? _filterOperatorId;
 
     public DataListPage(SessionService sessionService,
         OverlayDialog dialogOverlay, LoginOverlay loginOverlay,
@@ -109,21 +114,25 @@ public partial class DataListPage : UserControl
             var query = db.TestRecords.AsQueryable();
 
             // 權限篩選
-            //   Admin + ScopeAll → 看全部（含 OperatorUserId=NULL 的 legacy 資料）
-            //   Admin + ScopeMine / Operator / Guest → 嚴格限自己（不含 NULL）
-            if (_sessionService.CurrentRole == RoleLevel.Admin && _isAdminScopeAll)
+            if (_sessionService.CurrentRole == RoleLevel.Admin)
             {
-                // Admin 全域模式：不加任何篩選
+                if (_operatorFilterMode == OperatorFilterMode.My)
+                {
+                    var userId = _sessionService.CurrentUser?.Id ?? 0;
+                    query = query.Where(r => r.OperatorUserId == userId);
+                }
+                else if (_operatorFilterMode == OperatorFilterMode.Custom)
+                {
+                    var selectedIds = _operatorFilterList.Where(x => x.IsSelected).Select(x => x.UserId).ToList();
+                    query = query.Where(r => r.OperatorUserId.HasValue && selectedIds.Contains(r.OperatorUserId.Value));
+                }
+                // All 模式不加篩選（含 NULL）
             }
             else
             {
                 var userId = _sessionService.CurrentUser?.Id ?? 0;
                 query = query.Where(r => r.OperatorUserId == userId);
             }
-
-            // Admin 依操作員篩選
-            if (_filterOperatorId.HasValue)
-                query = query.Where(r => r.OperatorUserId == _filterOperatorId.Value);
 
             // 篩選條件
             if (!string.IsNullOrEmpty(_filterReportType))
@@ -766,24 +775,106 @@ public partial class DataListPage : UserControl
             OverlayDialogIcon.Info);
     }
 
+    private void LoadOperatorFilterList()
+    {
+        if (_operatorsLoaded) return;
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
+            
+            // 取得所有有紀錄的 Operator
+            var operators = db.TestRecords
+                .Where(r => r.OperatorUserId.HasValue)
+                .Select(r => new { Id = r.OperatorUserId!.Value, Name = r.OperatorUsername })
+                .Distinct()
+                .ToList();
+                
+            var currentUserId = _sessionService.CurrentUser?.Id ?? 0;
+            var currentUserName = _sessionService.CurrentUser?.Username ?? "";
+            
+            // 確保自己的帳號在清單中
+            if (currentUserId > 0 && !operators.Any(x => x.Id == currentUserId))
+            {
+                operators.Add(new { Id = currentUserId, Name = (string?)currentUserName });
+            }
+            
+            var sorted = operators.OrderBy(x => x.Name).ToList();
+            
+            foreach (var op in sorted)
+            {
+                _operatorFilterList.Add(new OperatorFilterItem { UserId = op.Id, Username = op.Name ?? "Unknown", IsSelected = true });
+            }
+            
+            OperatorFilterItemsControl.ItemsSource = _operatorFilterList;
+            _operatorsLoaded = true;
+        }
+        catch (Exception ex)
+        {
+            EventLogService.Instance?.LogError("UI", "DataListPage", ErrorCodes.DatabaseConnectionFailure, "Failed to load operators", ex.Message);
+        }
+    }
+
     private void OnScopeToggle(object sender, RoutedEventArgs e)
     {
-        _isAdminScopeAll = !_isAdminScopeAll;
+        LoadOperatorFilterList();
+        
+        // 確保彈窗開啟時，目前的選項狀態正確對應（若在 All 模式則全勾，My 模式則只勾自己）
+        if (_operatorFilterMode == OperatorFilterMode.All)
+        {
+            foreach (var item in _operatorFilterList) item.IsSelected = true;
+        }
+        else if (_operatorFilterMode == OperatorFilterMode.My)
+        {
+            var myId = _sessionService.CurrentUser?.Id ?? 0;
+            foreach (var item in _operatorFilterList) item.IsSelected = (item.UserId == myId);
+        }
+
+        OperatorFilterPopup.IsOpen = true;
+    }
+
+    private void OnFilterMyRecordsClick(object sender, RoutedEventArgs e)
+    {
+        _operatorFilterMode = OperatorFilterMode.My;
+        OperatorFilterPopup.IsOpen = false;
         UpdateScopeDisplay();
         LoadRecords();
-
-        EventLogService.Instance?.LogInfo("UI", "DataListPage",
-            ErrorCodes.GeneralInfo, "Admin scope toggled",
-            $"ScopeAll={_isAdminScopeAll}");
+    }
+    
+    private void OnFilterAllRecordsClick(object sender, RoutedEventArgs e)
+    {
+        _operatorFilterMode = OperatorFilterMode.All;
+        OperatorFilterPopup.IsOpen = false;
+        UpdateScopeDisplay();
+        LoadRecords();
+    }
+    
+    private void OnOperatorCheckboxClick(object sender, RoutedEventArgs e)
+    {
+        _operatorFilterMode = OperatorFilterMode.Custom;
+        UpdateScopeDisplay();
+        LoadRecords();
     }
 
     private void UpdateScopeDisplay()
     {
         var loc = LocalizationService.Instance;
-        TxtScopeLabel.Text = $"{loc["Data.FilterReportType"]}:";
-        BtnScopeToggle.Content = _isAdminScopeAll
-            ? $"▼ {loc["Data.FilterAll"]}"
-            : $"▼ {loc["Data.FilterMy"]}";
+        // 把 Report Type 改為 Operator 名稱
+        TxtScopeLabel.Text = $"{loc["Data.HeaderOperator"] ?? "Operator"}:";
+        
+        if (_operatorFilterMode == OperatorFilterMode.All)
+        {
+            BtnScopeToggle.Content = $"▼ {loc["Data.FilterAll"]}";
+        }
+        else if (_operatorFilterMode == OperatorFilterMode.My)
+        {
+            BtnScopeToggle.Content = $"▼ {loc["Data.FilterMy"]}";
+        }
+        else
+        {
+            var selectedCount = _operatorFilterList.Count(x => x.IsSelected);
+            BtnScopeToggle.Content = $"▼ {selectedCount} Selected";
+        }
     }
 
     // ═══════════════════════════════════════
@@ -1119,4 +1210,33 @@ internal class DataRecordItem
     public string OperatorUsername { get; set; } = "";
     public string ErrorCode { get; set; } = "";
     public string ErrorMessage { get; set; } = "";
+}
+
+public class OperatorFilterItem : INotifyPropertyChanged
+{
+    public int UserId { get; set; }
+    public string Username { get; set; } = "";
+    
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected != value)
+            {
+                _isSelected = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+            }
+        }
+    }
+    
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+public enum OperatorFilterMode
+{
+    All,
+    My,
+    Custom
 }

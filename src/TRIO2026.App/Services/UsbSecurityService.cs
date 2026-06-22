@@ -258,6 +258,7 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
 
                 // ── Read Background Check ──
                 // 僅在「未執行格式化」時才掃描（已格式化 → 碟片內容已清除，無需掃描）
+                bool readCheckScanned = false;
                 if (!formatExecuted)
                 {
                     int readCheckMode = _settings.UsbReadBackgroundCheck;
@@ -268,6 +269,7 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
                             $"{info.ToLogString()} | Mode={readCheckMode}, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
 
                         var scanPassed = await ScanDeviceContentAsync(info);
+                        readCheckScanned = true; // 標記：本次插入已執行掃描，後續 Content Scan 不重複觸發
 
                         if (scanPassed)
                         {
@@ -313,10 +315,17 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
                         $"{info.ToLogString()} | Reason=DriveFormatted, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
                 }
 
-                // ── Content Scan（獨立於 Read Check 的既有掃描機制）──
-                if (_settings.UsbContentScanEnabled)
+                // ── Content Scan（獨立掃描機制）──
+                // 若 Read Background Check 已執行掃描，則跳過避免重複，兩者共用同一次掃描結果
+                if (_settings.UsbContentScanEnabled && !readCheckScanned)
                 {
                     await ScanDeviceContentAsync(info);
+                }
+                else if (_settings.UsbContentScanEnabled && readCheckScanned)
+                {
+                    EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+                        ErrorCodes.GeneralInfo, "USB Content Scan Skipped - Reusing Read Check Result",
+                        $"{info.ToLogString()} | Reason=AlreadyScannedByReadCheck, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
                 }
 
                 _currentProcessingDrive = null;
@@ -393,6 +402,10 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
                 var files = Directory.GetFiles(info.DriveLetter, "*.*", SearchOption.AllDirectories);
                 bool hasThreat = false;
 
+                // 彙總清單：避免每個威脅檔案各產生一筆日誌，改為彙總後一次輸出
+                var blockedFiles = new List<string>();
+                var suspiciousFiles = new List<string>();
+
                 foreach (var file in files)
                 {
                     string fileName = Path.GetFileName(file);
@@ -400,33 +413,43 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
 
                     // 1. Exact Match (Allowed Files)
                     if (allowedFiles.Contains(fileName, StringComparer.OrdinalIgnoreCase))
-                    {
                         continue;
-                    }
 
-                    // 2. Blocked Extensions
+                    // 2. Blocked Extensions — 彙總，不逐筆寫日誌
                     if (blockExts.Contains(ext, StringComparer.OrdinalIgnoreCase))
                     {
-                        EventLogService.Instance?.LogWarning("UsbSecurity", "UsbSecurityService",
-                            ErrorCodes.UsbScanThreatDetected, "USB Threat Detected",
-                            $"{info.ToLogString()} | Action=ContentScan, File={fileName}, Extension={ext}, Verdict=Blocked(InBlacklist), User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                        blockedFiles.Add($"{fileName}({ext})");
                         hasThreat = true;
                         continue;
                     }
 
                     // 3. Safe Extensions
                     if (safeExts.Contains(ext, StringComparer.OrdinalIgnoreCase))
-                    {
                         continue;
-                    }
 
-                    // 4. Suspicious (NotInAnyList)
-                    EventLogService.Instance?.LogWarning("UsbSecurity", "UsbSecurityService",
-                        ErrorCodes.UsbScanSuspiciousFile, "USB Suspicious File",
-                        $"{info.ToLogString()} | Action=ContentScan, File={fileName}, Extension={ext}, Verdict=Suspicious(NotInAnyList), User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                    // 4. Suspicious (NotInAnyList) — 彙總，不逐筆寫日誌
+                    suspiciousFiles.Add($"{fileName}({ext})");
                 }
 
-                if (!hasThreat)
+                // 彙總輸出：黑名單威脅（一筆日誌含所有威脅檔案清單）
+                if (blockedFiles.Count > 0)
+                {
+                    string fileList = string.Join(", ", blockedFiles);
+                    EventLogService.Instance?.LogWarning("UsbSecurity", "UsbSecurityService",
+                        ErrorCodes.UsbScanThreatDetected, "USB Threat Detected",
+                        $"{info.ToLogString()} | Action=ContentScan, Count={blockedFiles.Count}, Verdict=Blocked(InBlacklist), Files=[{fileList}], User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                }
+
+                // 彙總輸出：可疑檔案（一筆日誌含所有可疑檔案清單）
+                if (suspiciousFiles.Count > 0)
+                {
+                    string fileList = string.Join(", ", suspiciousFiles);
+                    EventLogService.Instance?.LogWarning("UsbSecurity", "UsbSecurityService",
+                        ErrorCodes.UsbScanSuspiciousFile, "USB Suspicious Files",
+                        $"{info.ToLogString()} | Action=ContentScan, Count={suspiciousFiles.Count}, Verdict=Suspicious(NotInAnyList), Files=[{fileList}], User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                }
+
+                if (!hasThreat && suspiciousFiles.Count == 0)
                 {
                     EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
                         ErrorCodes.UsbScanClean, "USB Scan Clean",

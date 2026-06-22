@@ -49,10 +49,22 @@ public partial class DataListPage : UserControl
     private string _tableSortColumn = "date";
     private bool _tableSortAscending = false; // 預設降冪（最新在前）
 
-    // 篩選
+    // ── 進階篩選：正式生效值（LoadRecords 使用）──
+    private string _filterDateFrom = "";      // yyyy/MM/dd
+    private string _filterDateTo = "";        // yyyy/MM/dd
+    private readonly HashSet<string> _filterTypes = new() { "IntelliPlex", "Custom" }; // 全選=不過濾
+    // Operator 篩選透過 _operatorFilterMode + _operatorFilterList 管理
+
+    // ── 進階篩選：暫存草稿（點「套用」才寫入）──
+    private string _draftDateFrom = "";
+    private string _draftDateTo = "";
+    private readonly HashSet<string> _draftTypes = new() { "IntelliPlex", "Custom" };
+
+    // 舊版相容篩選欄位（保留供其他篩選邏輯使用）
     private string _filterReportType = "";
     private string _filterStatus = "";
     private string _filterProgram = "";
+
 
     public DataListPage(SessionService sessionService,
         OverlayDialog dialogOverlay, LoginOverlay loginOverlay,
@@ -134,7 +146,7 @@ public partial class DataListPage : UserControl
                 query = query.Where(r => r.OperatorUserId == userId);
             }
 
-            // 篩選條件
+            // 舊有篩選條件（保留相容性）
             if (!string.IsNullOrEmpty(_filterReportType))
                 query = query.Where(r => r.ReportType == _filterReportType);
             if (!string.IsNullOrEmpty(_filterStatus))
@@ -160,6 +172,22 @@ public partial class DataListPage : UserControl
                 ErrorMessage = r.ErrorMessage ?? ""
             }).ToList();
 
+            // ── 進階篩選（In-memory，確保 SQLite 字串相容）──
+            // 日期範圍：ExperimentDate 格式為 yyyy/MM/dd，字串字典序等同時間序
+            if (!string.IsNullOrEmpty(_filterDateFrom))
+                _records = _records.Where(r =>
+                    !string.IsNullOrEmpty(r.ExperimentDate) &&
+                    string.Compare(r.ExperimentDate, _filterDateFrom, StringComparison.Ordinal) >= 0).ToList();
+
+            if (!string.IsNullOrEmpty(_filterDateTo))
+                _records = _records.Where(r =>
+                    !string.IsNullOrEmpty(r.ExperimentDate) &&
+                    string.Compare(r.ExperimentDate, _filterDateTo, StringComparison.Ordinal) <= 0).ToList();
+
+            // Type 多選（若兩種都選 = 不過濾）
+            if (_filterTypes.Count < 2)
+                _records = _records.Where(r => _filterTypes.Contains(r.ReportType)).ToList();
+
             RenderList();
         }
         catch (Exception ex)
@@ -169,6 +197,7 @@ public partial class DataListPage : UserControl
                 ErrorCodes.GeneralError, "Load records failed", ex.Message);
         }
     }
+
 
     // ═══════════════════════════════════════
     // 渲染
@@ -764,16 +793,205 @@ public partial class DataListPage : UserControl
         BtnSelect.Content = _isSelectMode ? loc["Data.CancelSelect"] : loc["Data.Select"];
     }
 
-    private async void OnFilterClick(object sender, RoutedEventArgs e)
+    private void OnFilterClick(object sender, RoutedEventArgs e)
     {
-        // TODO: 顯示篩選面板 Overlay
         EventLogService.Instance?.LogButtonClick("DataListPage", "Filter");
-        await _dialogOverlay.ShowAsync(
-            LocalizationService.Instance["Data.FilterReportType"],
-            "Filter panel under development",
-            LocalizationService.Instance["Common.OK"],
-            OverlayDialogIcon.Info);
+        OpenFilterPanel();
     }
+
+    /// <summary>開啟進階篩選 Bottom Sheet，並將正式篩選值複製到暫存草稿</summary>
+    private void OpenFilterPanel()
+    {
+        if (_sessionService.CurrentRole == RoleLevel.Admin)
+        {
+            LoadOperatorFilterList();
+            OperatorFilterSection.Visibility = Visibility.Visible;
+            FilterPanelOperatorList.ItemsSource = _operatorFilterList;
+        }
+        else
+        {
+            OperatorFilterSection.Visibility = Visibility.Collapsed;
+        }
+
+        // 將正式篩選值複製到草稿
+        _draftDateFrom = _filterDateFrom;
+        _draftDateTo = _filterDateTo;
+        _draftTypes.Clear();
+        foreach (var t in _filterTypes) _draftTypes.Add(t);
+
+        // 同步 DatePicker UI
+        DpFilterFrom.SelectedDate = string.IsNullOrEmpty(_draftDateFrom) ? null
+            : DateTime.TryParse(_draftDateFrom.Replace('/', '-'), out var d1) ? d1 : (DateTime?)null;
+        DpFilterTo.SelectedDate = string.IsNullOrEmpty(_draftDateTo) ? null
+            : DateTime.TryParse(_draftDateTo.Replace('/', '-'), out var d2) ? d2 : (DateTime?)null;
+
+        UpdateTypeToggleUI();
+
+        FilterOverlayMask.Visibility = Visibility.Visible;
+        FilterSheetPanel.Visibility = Visibility.Visible;
+        FilterSheetTransform.Y = 0;
+    }
+
+    private void CloseFilterPanel()
+    {
+        FilterSheetPanel.Visibility = Visibility.Collapsed;
+        FilterOverlayMask.Visibility = Visibility.Collapsed;
+        FilterSheetTransform.Y = 600;
+    }
+
+    private void OnFilterClose(object sender, RoutedEventArgs e) => CloseFilterPanel();
+
+    private void OnFilterOverlayMaskClick(object sender, MouseButtonEventArgs e) => CloseFilterPanel();
+
+    private void OnFilterApply(object sender, RoutedEventArgs e)
+    {
+        _filterDateFrom = _draftDateFrom;
+        _filterDateTo = _draftDateTo;
+        _filterTypes.Clear();
+        foreach (var t in _draftTypes) _filterTypes.Add(t);
+
+        CloseFilterPanel();
+        UpdateFilterButtonState();
+        UpdateAdvancedFilterIndicator();
+        LoadRecords();
+
+        EventLogService.Instance?.LogInfo("UI", "DataListPage", ErrorCodes.GeneralInfo,
+            "Advanced filter applied",
+            $"From={_filterDateFrom}, To={_filterDateTo}, Types={string.Join(",", _filterTypes)}");
+    }
+
+    private void OnFilterReset(object sender, RoutedEventArgs e)
+    {
+        _draftDateFrom = _filterDateFrom = "";
+        _draftDateTo = _filterDateTo = "";
+        _draftTypes.Clear(); _draftTypes.Add("IntelliPlex"); _draftTypes.Add("Custom");
+        _filterTypes.Clear(); _filterTypes.Add("IntelliPlex"); _filterTypes.Add("Custom");
+
+        DpFilterFrom.SelectedDate = null;
+        DpFilterTo.SelectedDate = null;
+        UpdateTypeToggleUI();
+
+        CloseFilterPanel();
+        UpdateFilterButtonState();
+        UpdateAdvancedFilterIndicator();
+        LoadRecords();
+    }
+
+    private void OnClearAdvancedFilterClick(object sender, RoutedEventArgs e)
+    {
+        _filterDateFrom = _filterDateTo = "";
+        _filterTypes.Clear(); _filterTypes.Add("IntelliPlex"); _filterTypes.Add("Custom");
+        UpdateFilterButtonState();
+        UpdateAdvancedFilterIndicator();
+        LoadRecords();
+    }
+
+    // ── 日期快速 Chip ──
+    private void OnChipToday(object sender, RoutedEventArgs e) => SetDraftDateRange(0);
+    private void OnChip7D(object sender, RoutedEventArgs e) => SetDraftDateRange(7);
+    private void OnChip30D(object sender, RoutedEventArgs e) => SetDraftDateRange(30);
+    private void OnChip3M(object sender, RoutedEventArgs e) => SetDraftDateRange(90);
+
+    private void SetDraftDateRange(int pastDays)
+    {
+        var to = DateTime.Today;
+        var from = pastDays == 0 ? to : to.AddDays(-pastDays);
+        _draftDateFrom = from.ToString("yyyy/MM/dd");
+        _draftDateTo = to.ToString("yyyy/MM/dd");
+        DpFilterFrom.SelectedDate = from;
+        DpFilterTo.SelectedDate = to;
+    }
+
+    private void OnFilterDateChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _draftDateFrom = DpFilterFrom.SelectedDate?.ToString("yyyy/MM/dd") ?? "";
+        _draftDateTo = DpFilterTo.SelectedDate?.ToString("yyyy/MM/dd") ?? "";
+    }
+
+    // ── Type Toggle ──
+    private void OnTypeIPlexClick(object sender, RoutedEventArgs e)
+    {
+        if (_draftTypes.Contains("IntelliPlex") && _draftTypes.Count == 1) return;
+        if (_draftTypes.Contains("IntelliPlex")) _draftTypes.Remove("IntelliPlex");
+        else _draftTypes.Add("IntelliPlex");
+        UpdateTypeToggleUI();
+    }
+
+    private void OnTypeQPlexClick(object sender, RoutedEventArgs e)
+    {
+        if (_draftTypes.Contains("Custom") && _draftTypes.Count == 1) return;
+        if (_draftTypes.Contains("Custom")) _draftTypes.Remove("Custom");
+        else _draftTypes.Add("Custom");
+        UpdateTypeToggleUI();
+    }
+
+    private void UpdateTypeToggleUI()
+    {
+        bool iPlexOn = _draftTypes.Contains("IntelliPlex");
+        bool qPlexOn = _draftTypes.Contains("Custom");
+
+        BtnTypeIPlex.Background = new SolidColorBrush(iPlexOn
+            ? Color.FromRgb(0x1A, 0x48, 0x7A) : Color.FromRgb(0x1E, 0x2D, 0x4A));
+        BtnTypeIPlex.BorderBrush = new SolidColorBrush(iPlexOn
+            ? Color.FromRgb(0x42, 0xA5, 0xF5) : Color.FromRgb(0x2A, 0x3D, 0x5E));
+        BtnTypeIPlex.Foreground = new SolidColorBrush(iPlexOn
+            ? Color.FromRgb(0xF0, 0xF4, 0xF8) : Color.FromRgb(0xB0, 0xBE, 0xC5));
+
+        BtnTypeQPlex.Background = new SolidColorBrush(qPlexOn
+            ? Color.FromRgb(0x1A, 0x48, 0x7A) : Color.FromRgb(0x1E, 0x2D, 0x4A));
+        BtnTypeQPlex.BorderBrush = new SolidColorBrush(qPlexOn
+            ? Color.FromRgb(0x42, 0xA5, 0xF5) : Color.FromRgb(0x2A, 0x3D, 0x5E));
+        BtnTypeQPlex.Foreground = new SolidColorBrush(qPlexOn
+            ? Color.FromRgb(0xF0, 0xF4, 0xF8) : Color.FromRgb(0xB0, 0xBE, 0xC5));
+    }
+
+    private void OnFilterPanelOperatorClick(object sender, RoutedEventArgs e)
+    {
+        _operatorFilterMode = OperatorFilterMode.Custom;
+        UpdateScopeDisplay();
+    }
+
+    private bool HasAdvancedFilter =>
+        !string.IsNullOrEmpty(_filterDateFrom) ||
+        !string.IsNullOrEmpty(_filterDateTo) ||
+        _filterTypes.Count < 2;
+
+    private void UpdateFilterButtonState()
+    {
+        BtnFilter.Foreground = HasAdvancedFilter
+            ? new SolidColorBrush(Color.FromRgb(0x42, 0xA5, 0xF5))
+            : new SolidColorBrush(Color.FromRgb(0xB0, 0xBE, 0xC5));
+    }
+
+    private void UpdateAdvancedFilterIndicator()
+    {
+        if (_sessionService.CurrentRole != RoleLevel.Admin) return;
+        var loc = LocalizationService.Instance;
+        bool active = HasAdvancedFilter;
+        AdvancedFilterIndicator.Visibility = active ? Visibility.Visible : Visibility.Collapsed;
+        if (active)
+            TxtAdvancedFilterLabel.Text = loc["Data.FilterActive"] ?? "Advanced Active";
+    }
+
+    private void UpdateScopeDisplay()
+    {
+        var loc = LocalizationService.Instance;
+        TxtScopeLabel.Text = $"{loc["Data.HeaderOperator"] ?? "Operator"}:";
+
+        if (_operatorFilterMode == OperatorFilterMode.All)
+            BtnScopeToggle.Content = $"▼ {loc["Data.FilterAll"]}";
+        else if (_operatorFilterMode == OperatorFilterMode.My)
+            BtnScopeToggle.Content = $"▼ {loc["Data.FilterMy"]}";
+        else
+        {
+            var selectedCount = _operatorFilterList.Count(x => x.IsSelected);
+            BtnScopeToggle.Content = $"▼ {string.Format(loc["Data.FilterSelectedCount"] ?? "{0} Selected", selectedCount)}";
+        }
+
+        UpdateAdvancedFilterIndicator();
+    }
+
+    // ── 頂部 Quick Bar Operator 相關 ──
 
     private void LoadOperatorFilterList()
     {
@@ -782,54 +1000,44 @@ public partial class DataListPage : UserControl
         {
             using var scope = _serviceProvider.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
-            
-            // 取得所有有紀錄的 Operator
+
             var operators = db.TestRecords
                 .Where(r => r.OperatorUserId.HasValue)
                 .Select(r => new { Id = r.OperatorUserId!.Value, Name = r.OperatorUsername })
-                .Distinct()
-                .ToList();
-                
+                .Distinct().ToList();
+
             var currentUserId = _sessionService.CurrentUser?.Id ?? 0;
             var currentUserName = _sessionService.CurrentUser?.Username ?? "";
-            
-            // 確保自己的帳號在清單中
+
             if (currentUserId > 0 && !operators.Any(x => x.Id == currentUserId))
-            {
                 operators.Add(new { Id = currentUserId, Name = (string?)currentUserName });
-            }
-            
+
             var sorted = operators.OrderBy(x => x.Name).ToList();
-            
             foreach (var op in sorted)
-            {
-                _operatorFilterList.Add(new OperatorFilterItem { UserId = op.Id, Username = op.Name ?? "Unknown", IsSelected = true });
-            }
-            
+                _operatorFilterList.Add(new OperatorFilterItem
+                { UserId = op.Id, Username = op.Name ?? "Unknown", IsSelected = true });
+
             OperatorFilterItemsControl.ItemsSource = _operatorFilterList;
             _operatorsLoaded = true;
         }
         catch (Exception ex)
         {
-            EventLogService.Instance?.LogError("UI", "DataListPage", ErrorCodes.DatabaseConnectionFailure, "Failed to load operators", ex.Message);
+            EventLogService.Instance?.LogError("UI", "DataListPage",
+                ErrorCodes.DatabaseConnectionFailure, "Failed to load operators", ex.Message);
         }
     }
 
     private void OnScopeToggle(object sender, RoutedEventArgs e)
     {
         LoadOperatorFilterList();
-        
-        // 確保彈窗開啟時，目前的選項狀態正確對應（若在 All 模式則全勾，My 模式則只勾自己）
         if (_operatorFilterMode == OperatorFilterMode.All)
-        {
             foreach (var item in _operatorFilterList) item.IsSelected = true;
-        }
         else if (_operatorFilterMode == OperatorFilterMode.My)
         {
             var myId = _sessionService.CurrentUser?.Id ?? 0;
-            foreach (var item in _operatorFilterList) item.IsSelected = (item.UserId == myId);
+            foreach (var item in _operatorFilterList)
+                item.IsSelected = (item.UserId == myId);
         }
-
         OperatorFilterPopup.IsOpen = true;
     }
 
@@ -840,7 +1048,7 @@ public partial class DataListPage : UserControl
         UpdateScopeDisplay();
         LoadRecords();
     }
-    
+
     private void OnFilterAllRecordsClick(object sender, RoutedEventArgs e)
     {
         _operatorFilterMode = OperatorFilterMode.All;
@@ -848,7 +1056,7 @@ public partial class DataListPage : UserControl
         UpdateScopeDisplay();
         LoadRecords();
     }
-    
+
     private void OnOperatorCheckboxClick(object sender, RoutedEventArgs e)
     {
         _operatorFilterMode = OperatorFilterMode.Custom;
@@ -856,30 +1064,10 @@ public partial class DataListPage : UserControl
         LoadRecords();
     }
 
-    private void UpdateScopeDisplay()
-    {
-        var loc = LocalizationService.Instance;
-        // 把 Report Type 改為 Operator 名稱
-        TxtScopeLabel.Text = $"{loc["Data.HeaderOperator"] ?? "Operator"}:";
-        
-        if (_operatorFilterMode == OperatorFilterMode.All)
-        {
-            BtnScopeToggle.Content = $"▼ {loc["Data.FilterAll"]}";
-        }
-        else if (_operatorFilterMode == OperatorFilterMode.My)
-        {
-            BtnScopeToggle.Content = $"▼ {loc["Data.FilterMy"]}";
-        }
-        else
-        {
-            var selectedCount = _operatorFilterList.Count(x => x.IsSelected);
-            BtnScopeToggle.Content = $"▼ {selectedCount} Selected";
-        }
-    }
-
     // ═══════════════════════════════════════
     // 清單互動
     // ═══════════════════════════════════════
+
 
     private void OnRecordClick(object sender, RoutedEventArgs e)
     {

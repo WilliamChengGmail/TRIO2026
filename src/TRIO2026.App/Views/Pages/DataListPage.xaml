@@ -133,6 +133,165 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- 篩選面板 — 快速日期 Chip 按鈕 -->
+        <Style x:Key="FilterChipButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Background" Value="#1E2D4A" />
+            <Setter Property="BorderBrush" Value="#2A3D5E" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Height" Value="56" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ChipBd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ChipBd" Property="Background" Value="#2A4570" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 篩選面板 — Type Toggle 按鈕 -->
+        <Style x:Key="FilterTypeButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Background" Value="#1E2D4A" />
+            <Setter Property="BorderBrush" Value="#2A3D5E" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="70" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="TypeBd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="TypeBd" Property="Background" Value="#2A4570" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 篩選面板 — 底部大按鈕（套用/重設） -->
+        <Style x:Key="FilterActionButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Height" Value="64" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ActBd" Background="{TemplateBinding Background}"
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ActBd" Property="Opacity" Value="0.8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 篩選面板 — Operator CheckBox -->
+        <Style x:Key="FilterOperatorCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="Height" Value="64" />
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- 篩選面板 — 觸控放大 DatePicker：完整 ControlTemplate，日曆圖示 2x，深色文字 -->
+        <Style x:Key="TouchDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="52" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="#1A2040" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#42A5F5" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                </Grid.ColumnDefinitions>
+                                <!-- 日期文字輸入框 -->
+                                <DatePickerTextBox x:Name="PART_TextBox"
+                                                   Grid.Column="0"
+                                                   Foreground="#1A2040"
+                                                   Background="Transparent"
+                                                   FontSize="{TemplateBinding FontSize}"
+                                                   VerticalContentAlignment="Center"
+                                                   Padding="12,0"
+                                                   BorderThickness="0" />
+                                <!-- 日曆圖示按鈕 (2x 大小) -->
+                                <Button x:Name="PART_Button"
+                                        Grid.Column="1"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Focusable="False"
+                                        VerticalAlignment="Stretch"
+                                        HorizontalAlignment="Stretch">
+                                    <TextBlock Text="&#x1F4C5;" FontSize="34"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center" />
+                                </Button>
+                                <!-- 日曆彈出 (DatePicker 自動管理內容) -->
+                                <Popup x:Name="PART_Popup"
+                                       AllowsTransparency="True"
+                                       Placement="Bottom"
+                                       StaysOpen="False" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- DatePickerTextBox 深色文字（隱式套用）-->
+        <Style TargetType="DatePickerTextBox">
+            <Setter Property="Foreground" Value="#1A2040" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -180,17 +339,44 @@
             </Grid>
         </Border>
 
-        <!-- ═══ 篩選列（Admin 專屬的快速切換） ═══ -->
+        <!-- ═══ 篩選列（Admin 專屬的快速切換 + 進階篩選指示）═══ -->
         <Border x:Name="AdminFilterBar" Grid.Row="1"
-                Background="#15203A" Padding="16,6"
+                Background="#15203A" Padding="12,6"
+                BorderBrush="#1E3050" BorderThickness="0,0,0,1"
                 Visibility="Collapsed">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="TxtScopeLabel"
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- Label -->
+                    <ColumnDefinition Width="Auto"/> <!-- Quick Toggle -->
+                    <ColumnDefinition Width="*"/>   <!-- spacer -->
+                    <ColumnDefinition Width="Auto"/> <!-- 進階篩選指示 -->
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="TxtScopeLabel" Grid.Column="0"
                            FontSize="16" Foreground="{StaticResource TextSecondaryBrush}"
-                           VerticalAlignment="Center" Margin="0,0,8,0" />
-                <Button x:Name="BtnScopeToggle" Style="{StaticResource ToolbarButton}"
+                           VerticalAlignment="Center" Margin="4,0,6,0" />
+                <Button x:Name="BtnScopeToggle" Grid.Column="1"
+                        Style="{StaticResource ToolbarButton}"
                         Click="OnScopeToggle" FontSize="16" />
-            </StackPanel>
+                <!-- 進階篩選指示燈（有日期或 Type 篩選時顯示）-->
+                <StackPanel x:Name="AdvancedFilterIndicator" Grid.Column="3"
+                            Orientation="Horizontal" Visibility="Collapsed"
+                            VerticalAlignment="Stretch" Margin="0,2,0,2">
+                    <Border Background="#FFA726" CornerRadius="8"
+                            Padding="14,0" VerticalAlignment="Stretch">
+                        <TextBlock x:Name="TxtAdvancedFilterLabel"
+                                   FontSize="18" FontWeight="Bold" Foreground="#121212"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <Button x:Name="BtnClearAdvancedFilter" Content="✕"
+                            Foreground="#EF5350" FontSize="26" FontWeight="Bold"
+                            Background="Transparent" BorderThickness="0"
+                            Cursor="Hand"
+                            MinWidth="52" MinHeight="44"
+                            VerticalAlignment="Stretch"
+                            Padding="10,0"
+                            Click="OnClearAdvancedFilterClick" />
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- ═══ 清單內容 ═══ -->
@@ -234,7 +420,7 @@
             </Grid>
         </Border>
 
-        <!-- ═══ Operator 篩選彈出視窗 ═══ -->
+        <!-- ═══ Operator 篩選彈出視窗 (頂部 Quick Bar) ═══ -->
         <Popup x:Name="OperatorFilterPopup" StaysOpen="False" PlacementTarget="{Binding ElementName=BtnScopeToggle}" Placement="Bottom" AllowsTransparency="True">
             <Border Background="#1E2D4A" BorderBrush="#2A3D5E" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,8,0,8">
                 <StackPanel Width="260">
@@ -267,6 +453,188 @@
                 </StackPanel>
             </Border>
         </Popup>
+
+        <!-- ═══ 進階篩選面板：半透明遮罩 ═══ -->
+        <Border x:Name="FilterOverlayMask" Grid.RowSpan="5"
+                Background="#AA000000"
+                Visibility="Collapsed"
+                MouseLeftButtonDown="OnFilterOverlayMaskClick" />
+
+        <!-- ═══ 進階篩選面板：Bottom Sheet ═══ -->
+        <Border x:Name="FilterSheetPanel" Grid.RowSpan="5"
+                Background="#13203A"
+                BorderBrush="#2A3D5E" BorderThickness="0,1,0,0"
+                CornerRadius="20,20,0,0"
+                VerticalAlignment="Bottom"
+                Visibility="Collapsed">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="FilterSheetTransform" Y="600" />
+            </Border.RenderTransform>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                          MaxHeight="640">
+                <StackPanel Margin="20,16,20,24">
+
+                    <!-- 標題列 -->
+                    <Grid Margin="0,0,0,20">
+                        <TextBlock Text="{Binding [Data.FilterTitle], Source={x:Static svc:LocalizationService.Instance}}"
+                                   FontSize="24" FontWeight="Bold" FontFamily="Segoe UI"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <Button Content="✕" HorizontalAlignment="Right"
+                                Foreground="{StaticResource TextSecondaryBrush}"
+                                Background="Transparent" BorderThickness="0"
+                                FontSize="30" FontWeight="Bold" Cursor="Hand"
+                                MinWidth="56" MinHeight="56" Padding="8"
+                                Click="OnFilterClose" />
+                    </Grid>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="#1E3050" Margin="0,0,0,20" />
+
+                    <!-- ── 日期範圍 ── -->
+                    <TextBlock Text="{Binding [Data.FilterDateRange], Source={x:Static svc:LocalizationService.Instance}}"
+                               FontSize="20" FontWeight="SemiBold" Foreground="#64B5F6"
+                               Margin="0,0,0,14" />
+
+                    <!-- 快速日期 Chip -->
+                    <UniformGrid Columns="4" Margin="0,0,0,12">
+                        <Button x:Name="BtnChipToday" Margin="3"
+                                Style="{StaticResource FilterChipButton}"
+                                Content="{Binding [Data.FilterDateToday], Source={x:Static svc:LocalizationService.Instance}}"
+                                Click="OnChipToday" />
+                        <Button x:Name="BtnChip7D" Margin="3"
+                                Style="{StaticResource FilterChipButton}"
+                                Content="{Binding [Data.FilterDate7D], Source={x:Static svc:LocalizationService.Instance}}"
+                                Click="OnChip7D" />
+                        <Button x:Name="BtnChip30D" Margin="3"
+                                Style="{StaticResource FilterChipButton}"
+                                Content="{Binding [Data.FilterDate30D], Source={x:Static svc:LocalizationService.Instance}}"
+                                Click="OnChip30D" />
+                        <Button x:Name="BtnChip3M" Margin="3"
+                                Style="{StaticResource FilterChipButton}"
+                                Content="{Binding [Data.FilterDate3M], Source={x:Static svc:LocalizationService.Instance}}"
+                                Click="OnChip3M" />
+                    </UniformGrid>
+
+                    <!-- 自訂日期：開始 -->
+                    <TextBlock Text="{Binding [Data.FilterDateFrom], Source={x:Static svc:LocalizationService.Instance}}"
+                               FontSize="18" Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,8,0,6" />
+                    <DatePicker x:Name="DpFilterFrom"
+                                Style="{StaticResource TouchDatePickerStyle}"
+                                Margin="0,0,0,16"
+                                SelectedDateChanged="OnFilterDateChanged">
+                        <DatePicker.CalendarStyle>
+                            <Style TargetType="Calendar">
+                                <Setter Property="LayoutTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="2.0" ScaleY="2.0"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DatePicker.CalendarStyle>
+                    </DatePicker>
+
+                    <!-- 自訂日期：結束 -->
+                    <TextBlock Text="{Binding [Data.FilterDateTo], Source={x:Static svc:LocalizationService.Instance}}"
+                               FontSize="18" Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,4,0,6" />
+                    <DatePicker x:Name="DpFilterTo"
+                                Style="{StaticResource TouchDatePickerStyle}"
+                                Margin="0,0,0,24"
+                                SelectedDateChanged="OnFilterDateChanged">
+                        <DatePicker.CalendarStyle>
+                            <Style TargetType="Calendar">
+                                <Setter Property="LayoutTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="2.0" ScaleY="2.0"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DatePicker.CalendarStyle>
+                    </DatePicker>
+
+                    <!-- 分隔線 -->
+                    <Border Height="1" Background="#1E3050" Margin="0,0,0,20" />
+
+                    <!-- ── 資料類型 ── -->
+                    <TextBlock Text="{Binding [Data.FilterType], Source={x:Static svc:LocalizationService.Instance}}"
+                               FontSize="20" FontWeight="SemiBold" Foreground="#64B5F6"
+                               Margin="0,0,0,14" />
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="BtnTypeIPlex" Grid.Column="0"
+                                Style="{StaticResource FilterTypeButton}"
+                                Content="IntelliPlex"
+                                Click="OnTypeIPlexClick" />
+                        <Button x:Name="BtnTypeQPlex" Grid.Column="2"
+                                Style="{StaticResource FilterTypeButton}"
+                                Content="Custom"
+                                Click="OnTypeQPlexClick" />
+                    </Grid>
+
+                    <!-- ── 操作員（Admin Only）── -->
+                    <Border x:Name="OperatorFilterSection" Visibility="Collapsed">
+                        <StackPanel>
+                            <Border Height="1" Background="#1E3050" Margin="0,0,0,20" />
+                            <TextBlock Text="{Binding [Data.FilterByUser], Source={x:Static svc:LocalizationService.Instance}}"
+                                       FontSize="24" FontWeight="SemiBold" Foreground="#64B5F6"
+                                       Margin="0,0,0,14" />
+                            <Border Background="#1A2840" CornerRadius="10"
+                                    BorderBrush="#2A3D5E" BorderThickness="1">
+                                <ScrollViewer MaxHeight="280" VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl x:Name="FilterPanelOperatorList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Content="{Binding Username}"
+                                                          IsChecked="{Binding IsSelected}"
+                                                          Style="{StaticResource FilterOperatorCheckBox}"
+                                                          Padding="12,0"
+                                                          Click="OnFilterPanelOperatorClick" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 間距 -->
+                    <Border Height="24" />
+
+                    <!-- ── 底部按鈕 ── -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Style="{StaticResource FilterActionButton}"
+                                Background="#1E2D4A"
+                                Content="{Binding [Data.FilterReset], Source={x:Static svc:LocalizationService.Instance}}"
+                                Click="OnFilterReset" />
+                        <Button Grid.Column="2" Style="{StaticResource FilterActionButton}"
+                                Click="OnFilterApply">
+                            <Button.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#42A5F5" Offset="0" />
+                                    <GradientStop Color="#26C6DA" Offset="1" />
+                                </LinearGradientBrush>
+                            </Button.Background>
+                            <Button.Content>
+                                <TextBlock Text="{Binding [Data.FilterApply], Source={x:Static svc:LocalizationService.Instance}}"
+                                           FontSize="22" FontWeight="Bold" />
+                            </Button.Content>
+                        </Button>
+                    </Grid>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
 
         <!-- ═══ 共用使用者選單 ═══ -->
         <controls:UserMenuControl x:Name="UserMenu" Grid.RowSpan="5"

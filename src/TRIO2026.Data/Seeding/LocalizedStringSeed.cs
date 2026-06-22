@@ -753,6 +753,36 @@ public static class LocalizedStringSeed
         seeds.AddRange(CreateGroup(ref id, "Data", "FilterReset",
             "Reset", "重設", "重置", "リセット"));
 
+        // 清單頁 — 進階篩選面板
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterTitle",
+            "Advanced Filter", "進階篩選", "高级筛选", "高度フィルタ"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterDateFrom",
+            "Start Date", "開始日期", "开始日期", "開始日"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterDateTo",
+            "End Date", "結束日期", "结束日期", "終了日"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterType",
+            "Report Type", "資料類型", "资料类型", "タイプ"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterTypeIPlex",
+            "IPlex", "IPlex", "IPlex", "IPlex"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterTypeQPlex",
+            "QPlex", "QPlex", "QPlex", "QPlex"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterDateToday",
+            "Today", "今日", "今日", "今日"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterDate7D",
+            "7 Days", "近 7 日", "近 7 日", "7日"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterDate30D",
+            "30 Days", "近 30 日", "近 30 日", "30日"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterDate3M",
+            "3 Months", "近 3 月", "近 3 月", "3ヶ月"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterDateCustom",
+            "Custom Range", "自訂範圍", "自定范围", "カスタム"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterOperatorAll",
+            "All Operators", "全部操作員", "全部操作员", "すべて"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterActive",
+            "Advanced Active", "進階篩選中", "高级筛选中", "フィルタ中"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "FilterSelectedCount",
+            "{0} Selected", "已選 {0} 位", "已选 {0} 位", "{0}名選択"));
+
         // 清單頁 — 卡片資訊
         seeds.AddRange(CreateGroup(ref id, "Data", "Samples",
             "samples", "個樣本", "个样本", "サンプル"));

@@ -130,24 +130,33 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
             {
                 _currentProcessingDrive = driveLetter;
                 var info = UsbDeviceQueryHelper.GetDeviceInfo(driveLetter);
-                
-                if (info == null) 
+
+                if (info == null)
                 {
+                    // 診斷：GetDeviceInfo 回傳 null（裝置可能在查詢前已移除，或模擬器驅動無法識別）
+                    EventLogService.Instance?.LogWarning("UsbSecurity", "UsbSecurityService",
+                        ErrorCodes.UsbDeviceInserted, "USB Device Info Null - Skipped",
+                        $"DriveLetter={driveLetter} | Reason=GetDeviceInfo returned null (device removed or unrecognized)");
                     _currentProcessingDrive = null;
-                    continue; // Device might have been removed before we query
+                    continue;
                 }
 
                 _activeDevices[driveLetter] = info;
 
                 // ── 無條件記錄 USB 插入事件（不受安全檢查影響） ──
                 bool cyberEnabled = _settings.UsbCybersecurityEnabled;
+                bool autoFormat = _settings.UsbAutoFormatOnInsert;
                 int queueCount = _pendingDrives.Count;
                 EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
                     ErrorCodes.UsbDeviceInserted, "USB Device Inserted",
-                    $"{info.ToLogString()} | CybersecurityEnabled={cyberEnabled}, QueueRemaining={queueCount}, User={_sessionService.CurrentUser?.Username ?? "(NotLoggedIn)"}");
+                    $"{info.ToLogString()} | CybersecurityEnabled={cyberEnabled}, AutoFormatOnInsert={autoFormat}, DriveType={info.DriveType}, QueueRemaining={queueCount}, User={_sessionService.CurrentUser?.Username ?? "(NotLoggedIn)"}");
 
                 if (!cyberEnabled)
                 {
+                    // 診斷：usb_cybersecurity_enabled=0，不進行任何安全處理
+                    EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+                        ErrorCodes.UsbDeviceInserted, "USB Processing Skipped - CybersecurityDisabled",
+                        $"{info.ToLogString()} | Reason=UsbCybersecurityEnabled=false");
                     _currentProcessingDrive = null;
                     continue;
                 }
@@ -183,6 +192,7 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
 
                 // Auto Format
                 if (_settings.UsbAutoFormatOnInsert)
+
                 {
                     if (info.DriveType != "Removable")
                     {
@@ -206,7 +216,7 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
 
                         _currentFormatTcs = new TaskCompletionSource<bool>();
                         FormatRequired?.Invoke(this, info);
-                        
+
                         bool confirmed = await _currentFormatTcs.Task;
                         _currentFormatTcs = null;
 
@@ -258,10 +268,16 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
         }
     }
 
-    public Task ReportFormatResultAsync(UsbDeviceInfo info, bool confirmed)
+    public Task ReportFormatResultAsync(UsbDeviceInfo info, bool confirmed, string? reason = null)
     {
         if (string.Equals(info.DriveLetter, _currentProcessingDrive, StringComparison.OrdinalIgnoreCase) && _currentFormatTcs != null)
         {
+            // 日誌：區分使用者主動選擇 vs 系統強制取消
+            string decisionSource = string.IsNullOrEmpty(reason) ? "UserAction" : $"ForcedBy={reason}";
+            EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+                ErrorCodes.GeneralInfo, confirmed ? "USB Format Confirmed" : "USB Format Declined",
+                $"{info.ToLogString()} | Decision={confirmed}, Source={decisionSource}");
+
             _currentFormatTcs.TrySetResult(confirmed);
         }
         return Task.CompletedTask;

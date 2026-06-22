@@ -89,6 +89,14 @@ public partial class AppShell : Window
             }
         };
 
+        // 訂閱強制取消事件 — 記錄來源（SessionLock / DeviceRemoved 等）
+        UsbFormatConfirmHost.ForceCancelled += (s, reason) =>
+        {
+            EventLogService.Instance?.LogWarning("UsbSecurity", "AppShell",
+                ErrorCodes.GeneralInfo, "USB Format Force Cancelled",
+                $"Reason={reason}, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+        };
+
         usbSecurityService.FormatRequired += (s, info) =>
         {
             Dispatcher.Invoke(() =>
@@ -503,6 +511,9 @@ public partial class AppShell : Window
 
             // Data 頁面後續：關閉中途對話框、強制關閉 USB 選擇器
             UsbDriveSelectorHost.ForceClose();
+
+            // Session Lock 期間如有格式化確認視窗仍在等待，強制取消（標記來源為 SessionLock）
+            UsbFormatConfirmHost.ForceCancel("SessionLock");
 
             // 若解鎖後當前頁面是 DataDetailPage，回到清單頁並重整資料
             if (PageHost.Content is Pages.DataDetailPage)

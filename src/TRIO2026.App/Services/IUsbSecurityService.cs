@@ -18,7 +18,8 @@ public interface IUsbSecurityService
     /// <summary>由 UI 呼叫：回報格式化確認結果，決定是否執行格式化並處理下一個佇列</summary>
     /// <param name="info">隨身碟資訊</param>
     /// <param name="confirmed">是否確認執行格式化</param>
-    Task ReportFormatResultAsync(UsbDeviceInfo info, bool confirmed);
+    /// <param name="reason">取消原因（使用者主動取消傳 null 或空字串；系統強制取消傳 SessionLock 等）</param>
+    Task ReportFormatResultAsync(UsbDeviceInfo info, bool confirmed, string? reason = null);
 
     /// <summary>掃描指定的隨身碟內容，依據設定的黑白名單判斷是否有風險檔案</summary>
     Task<bool> ScanDeviceContentAsync(UsbDeviceInfo info);

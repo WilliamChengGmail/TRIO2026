@@ -1189,83 +1189,108 @@ public partial class DataListPage : UserControl
         EventLogService.Instance?.LogInfo("Data", "DataListPage",
             ErrorCodes.GeneralInfo, "USB drive selected", selectedDrive.ToLogString());
 
-        // ── Step 3：Cybersecurity 掃描 ──
-        StatusText.Text = loc["Data.UsbPreparing"];
-
+        // ── Step 3：Cybersecurity 讀取背景掃描 ──
+        // 條件：usb_read_background_check=1 AND usb_cybersecurity_enabled=1
         var usbSecurity = _serviceProvider.GetService(typeof(IUsbSecurityService)) as IUsbSecurityService;
-        if (usbSecurity != null)
+        if (_systemSettings.UsbReadBackgroundCheck && _systemSettings.UsbCybersecurityEnabled)
         {
-            var scanPassed = await usbSecurity.ScanDeviceContentAsync(selectedDrive);
-            if (!scanPassed)
+            StatusText.Text = loc["Data.UsbPreparing"];
+            if (usbSecurity != null)
             {
-                EventLogService.Instance?.LogWarning("Data", "DataListPage",
-                    ErrorCodes.DataCyberBlocked, "Cybersecurity check failed",
-                    selectedDrive.ToLogString());
+                var scanPassed = await usbSecurity.ScanDeviceContentAsync(selectedDrive);
+                if (!scanPassed)
+                {
+                    EventLogService.Instance?.LogWarning("Data", "DataListPage",
+                        ErrorCodes.DataCyberBlocked, "USB read background check failed",
+                        selectedDrive.ToLogString());
 
-                await _dialogOverlay.ShowAsync(
-                    loc["Data.CyberBlocked"],
-                    loc["Data.CyberBlocked"],
-                    loc["Common.OK"],
-                    OverlayDialogIcon.Error);
-                return;
+                    await _dialogOverlay.ShowAsync(
+                        loc["Data.CyberBlocked"],
+                        loc["Data.UsbReadBlocked"] ?? "Security check failed. Read aborted.",
+                        loc["Common.OK"],
+                        OverlayDialogIcon.Error);
+
+                    StatusText.Text = loc["Common.Ready"];
+                    return;   // ← 中止，不繼續讀取/匯出
+                }
             }
         }
 
-        // ── Step 4：格式化判斷（空碟跳過，有內容詢問） ──
+        // ── Step 4：格式化判斷 ──
+        // 規則 A：usb_format_before_write=1 AND usb_cybersecurity_enabled=1 → 有內容才跳出提示，空碟跳過並紀錄
+        // 規則 B：usb_format_before_write=0 → 不跳出提示，直接進行下載
         try
         {
             var usbRoot = selectedDrive.DriveLetter;
-            if (Directory.Exists(usbRoot))
+            bool doFormat = false;
+
+            bool forceFormatPolicy = _systemSettings.UsbFormatBeforeWrite && _systemSettings.UsbCybersecurityEnabled;
+
+            if (forceFormatPolicy && Directory.Exists(usbRoot))
             {
                 var hasContent = Directory.GetFiles(usbRoot, "*", SearchOption.AllDirectories).Length > 0;
                 if (hasContent)
                 {
-                    // 按鈕順序：取消(主/預設) vs 格式化(次)
-                    var skipFormat = await _dialogOverlay.ShowConfirmAsync(
+                    EventLogService.Instance?.LogInfo("Data", "DataListPage",
+                        ErrorCodes.GeneralInfo, "Format prompt shown (USB has content)");
+
+                    // 強制格式化確認（安全政策）- 三按鈕垂直排列
+                    var formatConfirmResult = await _dialogOverlay.ShowTripleAsync(
                         loc["Data.DetailDownload"],
-                        loc["Data.FormatConfirm"],
-                        loc["Common.Cancel"],
-                        loc["Common.Confirm"]);
+                        loc["Data.FormatRequired"] ?? "Security policy requires formatting before write. Proceed?",
+                        loc["Data.CancelFormat"] ?? "Skip Formatting",
+                        loc["Data.ConfirmFormat"] ?? "Format",
+                        loc["Data.CancelDownload"] ?? "Cancel Download");
 
-                    if (skipFormat)
+                    // 傳回值：0=主要(取消格式化), 1=中間(確認格式化), 2=取消(取消下載)
+                    if (formatConfirmResult == 2)
                     {
-                        // 預設：不格式化，直接匯出
                         EventLogService.Instance?.LogInfo("Data", "DataListPage",
-                            ErrorCodes.GeneralInfo, "Format declined, continue export");
+                            ErrorCodes.GeneralInfo, "Format declined and export aborted by user");
+                        StatusText.Text = loc["Common.Ready"];
+                        return;
                     }
-                    else if (usbSecurity != null)
+                    else if (formatConfirmResult == 1)
                     {
-                        // 使用者選擇格式化 → 顯示進度 → 等待完成
-                        StatusText.Text = loc["Data.UsbPreparing"];
-
-                        var (formatOk, formatOutput) = await usbSecurity.FormatDriveAsync(selectedDrive);
-
-                        if (formatOk)
-                        {
-                            EventLogService.Instance?.LogInfo("Data", "DataListPage",
-                                ErrorCodes.UsbFormatSuccess, "USB formatted before export",
-                                formatOutput);
-                        }
-                        else
-                        {
-                            EventLogService.Instance?.LogError("Data", "DataListPage",
-                                ErrorCodes.UsbFormatFailed, "USB format failed", formatOutput);
-
-                            await _dialogOverlay.ShowAsync(
-                                loc["Data.DownloadFail"],
-                                $"USB Format Failed: {formatOutput}",
-                                loc["Common.OK"],
-                                OverlayDialogIcon.Error);
-
-                            StatusText.Text = loc["Common.Ready"];
-                            return;
-                        }
+                        EventLogService.Instance?.LogInfo("Data", "DataListPage",
+                            ErrorCodes.GeneralInfo, "Format confirmed by user");
+                        doFormat = true;
+                    }
+                    else // formatConfirmResult == 0
+                    {
+                        EventLogService.Instance?.LogInfo("Data", "DataListPage",
+                            ErrorCodes.GeneralInfo, "Format skipped by user, continue export");
+                        // doFormat 維持 false
                     }
                 }
                 else
                 {
+                    // 隨身碟是空碟, 則不需跳出format視窗, 直接進行下載 (視窗沒有出現但Log 要紀錄)
                     EventLogService.Instance?.LogInfo("Data", "DataListPage",
                         ErrorCodes.DataFormatSkipped, "USB empty, format skipped");
+                }
+            }
+
+            if (doFormat && usbSecurity != null)
+            {
+                StatusText.Text = loc["Data.UsbPreparing"];
+                var (formatOk, formatOutput) = await usbSecurity.FormatDriveAsync(selectedDrive);
+                if (formatOk)
+                {
+                    EventLogService.Instance?.LogInfo("Data", "DataListPage",
+                        ErrorCodes.UsbFormatSuccess, "USB formatted before export", formatOutput);
+                }
+                else
+                {
+                    EventLogService.Instance?.LogError("Data", "DataListPage",
+                        ErrorCodes.UsbFormatFailed, "USB format failed", formatOutput);
+                    await _dialogOverlay.ShowAsync(
+                        loc["Data.DownloadFail"],
+                        $"USB Format Failed: {formatOutput}",
+                        loc["Common.OK"],
+                        OverlayDialogIcon.Error);
+                    StatusText.Text = loc["Common.Ready"];
+                    return;
                 }
             }
         }

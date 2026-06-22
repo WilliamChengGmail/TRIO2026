@@ -876,6 +876,28 @@ public static class LocalizedStringSeed
             "已完成: {0} / {1} 笔\n中断于: {2}",
             "完了: {0} / {1}\n中断: {2}"));
 
+        // USB 安全性 — 讀取背景檢查中止
+        seeds.AddRange(CreateGroup(ref id, "Data", "UsbReadBlocked",
+            "Security Check: This device contains potentially unsafe files and cannot be read.",
+            "安全檢查：此裝置含有潛在風險檔案，已中止讀取。",
+            "安全检查：此设备含有潜在风险文件，已中止读取。",
+            "セキュリティチェック：このデバイスに危険なファイルが含まれているため、読み取りを中止しました。"));
+
+        // USB 安全性 — 寫出前強制格式化提示
+        seeds.AddRange(CreateGroup(ref id, "Data", "FormatRequired",
+            "Security policy requires formatting this USB drive before writing.\nAll existing data will be erased. Proceed?",
+            "安全政策要求寫入前必須格式化此 USB 裝置，\n現有資料將全部清除。確定繼續？",
+            "安全策略要求写入前必须格式化此 USB 设备，\n现有数据将全部清除。确定继续？",
+            "セキュリティポリシーにより、書き込み前に USB デバイスをフォーマットする必要があります。\nすべてのデータが消去されます。続行しますか？"));
+
+        // USB Format Prompt
+        seeds.AddRange(CreateGroup(ref id, "Data", "CancelFormat",
+            "Skip Formatting", "取消格式化", "取消格式化", "フォーマットをキャンセル"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "ConfirmFormat",
+            "Format", "確認格式化", "确认格式化", "フォーマットの確認"));
+        seeds.AddRange(CreateGroup(ref id, "Data", "CancelDownload",
+            "Cancel Download", "取消下載", "取消下载", "ダウンロードをキャンセル"));
+
         return seeds;
     }
 

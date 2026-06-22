@@ -16,6 +16,7 @@ public partial class UsbFormatConfirmOverlay : UserControl
     private CancellationTokenSource? _countdownCts;
 
     public event EventHandler<bool>? Completed;
+    public event EventHandler<string>? ForceCancelled;  // reason: SessionLock / DeviceRemoved
 
     public UsbFormatConfirmOverlay()
     {
@@ -74,6 +75,17 @@ public partial class UsbFormatConfirmOverlay : UserControl
     {
         Visibility = Visibility.Collapsed;
         _countdownCts?.Cancel();
+    }
+
+    /// <summary>
+    /// 強制取消（來源：Session Lock 或其他系統事件，非使用者主動點擊）
+    /// </summary>
+    public void ForceCancel(string reason = "SessionLock")
+    {
+        if (Visibility != Visibility.Visible) return;
+        Hide();
+        ForceCancelled?.Invoke(this, reason);
+        Completed?.Invoke(this, false);
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)

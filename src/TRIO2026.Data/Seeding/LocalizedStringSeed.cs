@@ -898,6 +898,26 @@ public static class LocalizedStringSeed
         seeds.AddRange(CreateGroup(ref id, "Data", "CancelDownload",
             "Cancel Download", "取消下載", "取消下载", "ダウンロードをキャンセル"));
 
+        // USB Read Background Check — 阻擋模式
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "ReadCheckBlocked.Title",
+            "Security Alert", "安全性警告", "安全性警告", "セキュリティ警告"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "ReadCheckBlocked",
+            "This USB drive contains potentially dangerous files.\nAccess has been blocked for security reasons.",
+            "此 USB 隨身碟包含潛在危險檔案，\n基於安全考量已阻擋後續操作。",
+            "此 USB 随身碟包含潜在危险文件，\n基于安全考量已阻挡后续操作。",
+            "この USB ドライブには危険なファイルが含まれています。\nセキュリティ上の理由でアクセスがブロックされました。"));
+
+        // USB Read Background Check — 提示模式
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "ReadCheckWarning.Title",
+            "Security Notice", "安全性提醒", "安全性提醒", "セキュリティ通知"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "ReadCheckWarning",
+            "This USB drive contains files that may pose a security risk.\nPlease confirm you have been notified of this warning.",
+            "此 USB 隨身碟可能包含有安全風險的檔案，\n請確認已收到此安全提醒。",
+            "此 USB 随身碟可能包含有安全风险的文件，\n请确认已收到此安全提醒。",
+            "この USB ドライブにはセキュリティリスクのあるファイルが含まれている可能性があります。\nこの警告を確認してください。"));
+        seeds.AddRange(CreateGroup(ref id, "UsbSecurity", "ReadCheckAcknowledged",
+            "I Understand", "我已了解", "我已了解", "了解しました"));
+
         return seeds;
     }
 

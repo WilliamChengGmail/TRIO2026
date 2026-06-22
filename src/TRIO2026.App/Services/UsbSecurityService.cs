@@ -26,10 +26,12 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
     private readonly SemaphoreSlim _processingLock = new(1, 1);
     private string? _currentProcessingDrive;
     private TaskCompletionSource<bool>? _currentFormatTcs;
+    private TaskCompletionSource<bool>? _currentReadCheckTcs;
 
     private readonly ConcurrentDictionary<string, UsbDeviceInfo> _activeDevices = new(StringComparer.OrdinalIgnoreCase);
 
     public event EventHandler<UsbDeviceInfo>? FormatRequired;
+    public event EventHandler<(UsbDeviceInfo Info, int Mode, bool HasThreat)>? ReadCheckCompleted;
 
     public UsbSecurityService(SystemSettingService settings, SessionService sessionService)
     {
@@ -190,9 +192,9 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
                     continue;
                 }
 
-                // Auto Format
+                // ── Auto Format ──
+                bool formatExecuted = false;
                 if (_settings.UsbAutoFormatOnInsert)
-
                 {
                     if (info.DriveType != "Removable")
                     {
@@ -232,6 +234,7 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
                             var (success, output) = await RunFormatCommandAsync(info.DriveLetter, "exFAT");
                             if (success)
                             {
+                                formatExecuted = true;
                                 EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
                                     ErrorCodes.UsbFormatSuccess, "USB Quick Format Success",
                                     $"{info.ToLogString()} | Action=QuickFormat, TargetFS=exFAT, Result=Success, Cmd={formatCmd}, CmdOutput={output}, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
@@ -253,7 +256,64 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
                     }
                 }
 
-                // Scan
+                // ── Read Background Check ──
+                // 僅在「未執行格式化」時才掃描（已格式化 → 碟片內容已清除，無需掃描）
+                if (!formatExecuted)
+                {
+                    int readCheckMode = _settings.UsbReadBackgroundCheck;
+                    if (readCheckMode > 0 && _settings.UsbCybersecurityEnabled)
+                    {
+                        EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+                            ErrorCodes.UsbReadCheckStarted, "USB Read Check Started",
+                            $"{info.ToLogString()} | Mode={readCheckMode}, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+
+                        var scanPassed = await ScanDeviceContentAsync(info);
+
+                        if (scanPassed)
+                        {
+                            EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+                                ErrorCodes.UsbReadCheckPassed, "USB Read Check Passed",
+                                $"{info.ToLogString()} | Mode={readCheckMode}, Result=Clean, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                            ReadCheckCompleted?.Invoke(this, (info, readCheckMode, false));
+                        }
+                        else
+                        {
+                            if (readCheckMode == 1)
+                            {
+                                // 模式 1：阻擋 — 記錄並通知 UI 顯示 Error 提示
+                                EventLogService.Instance?.LogWarning("UsbSecurity", "UsbSecurityService",
+                                    ErrorCodes.UsbReadCheckBlocked, "USB Read Check Blocked",
+                                    $"{info.ToLogString()} | Mode=1, Result=ThreatDetected, Action=Blocked, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                                ReadCheckCompleted?.Invoke(this, (info, readCheckMode, true));
+                            }
+                            else // readCheckMode == 2
+                            {
+                                // 模式 2：提示 — 記錄並等待使用者確認「我已了解」
+                                EventLogService.Instance?.LogWarning("UsbSecurity", "UsbSecurityService",
+                                    ErrorCodes.UsbReadCheckBlocked, "USB Read Check Threat Found",
+                                    $"{info.ToLogString()} | Mode=2, Result=ThreatDetected, Action=WaitingAcknowledgement, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                                _currentReadCheckTcs = new TaskCompletionSource<bool>();
+                                ReadCheckCompleted?.Invoke(this, (info, readCheckMode, true));
+                                await _currentReadCheckTcs.Task;
+                                _currentReadCheckTcs = null;
+                            }
+                        }
+                    }
+                    else if (readCheckMode == 0)
+                    {
+                        EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+                            ErrorCodes.GeneralInfo, "USB Read Check Skipped",
+                            $"{info.ToLogString()} | Reason=ReadCheckMode=0, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                    }
+                }
+                else
+                {
+                    EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+                        ErrorCodes.GeneralInfo, "USB Read Check Skipped - Format Executed",
+                        $"{info.ToLogString()} | Reason=DriveFormatted, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                }
+
+                // ── Content Scan（獨立於 Read Check 的既有掃描機制）──
                 if (_settings.UsbContentScanEnabled)
                 {
                     await ScanDeviceContentAsync(info);
@@ -280,6 +340,16 @@ public class UsbSecurityService : IUsbSecurityService, IDisposable
 
             _currentFormatTcs.TrySetResult(confirmed);
         }
+        return Task.CompletedTask;
+    }
+
+    public Task ReportReadCheckAcknowledgedAsync(UsbDeviceInfo info)
+    {
+        EventLogService.Instance?.LogInfo("UsbSecurity", "UsbSecurityService",
+            ErrorCodes.UsbReadCheckUserAcknowledged, "USB Read Check User Acknowledged",
+            $"{info.ToLogString()} | Mode=2, AckTimestamp={DateTime.Now:yyyy-MM-dd HH:mm:ss}, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+
+        _currentReadCheckTcs?.TrySetResult(true);
         return Task.CompletedTask;
     }
 

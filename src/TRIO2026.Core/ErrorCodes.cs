@@ -102,6 +102,10 @@ public static class ErrorCodes
     public const string UsbNotAuthenticated = "WRN-4022";      // 未登入狀態下 USB 操作被攔截
     public const string UsbSessionLocked = "WRN-4023";          // 畫面鎖定時 USB 操作被攔截
     public const string UsbFormatSkipped = "INF-4024";           // USB 已是目標格式且無檔案，跳過格式化
+    public const string UsbReadCheckStarted = "INF-4025";        // USB 讀取背景檢查開始（記錄模式 1/2）
+    public const string UsbReadCheckPassed = "INF-4026";         // USB 讀取背景檢查通過（無威脅）
+    public const string UsbReadCheckBlocked = "WRN-4027";        // USB 讀取背景檢查偵測威脅（模式 1 阻擋 / 模式 2 提示）
+    public const string UsbReadCheckUserAcknowledged = "INF-4028"; // 模式 2：使用者已確認收到安全提醒
 
     // ── 10xxx Data Page ──
     public const string DataRecordView = "INF-10001";             // 檢視紀錄詳情

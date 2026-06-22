@@ -412,31 +412,12 @@ public partial class DataDetailPage : UserControl
             return;
         }
 
-        // Step 2：Cybersecurity 讀取背景掃描
-        // 條件：usb_read_background_check=1 AND usb_cybersecurity_enabled=1
-        var usbSecurity = _serviceProvider.GetService(typeof(IUsbSecurityService)) as IUsbSecurityService;
-        var settings = _serviceProvider.GetService(typeof(SystemSettingService)) as SystemSettingService;
-        if (settings != null && settings.UsbReadBackgroundCheck && settings.UsbCybersecurityEnabled)
-        {
-            if (usbSecurity != null)
-            {
-                var scanPassed = await usbSecurity.ScanDeviceContentAsync(selectedDrive);
-                if (!scanPassed)
-                {
-                    EventLogService.Instance?.LogWarning("Data", "DataDetailPage",
-                        ErrorCodes.DataCyberBlocked, "USB read background check failed", selectedDrive.ToLogString());
-                    await _dialogOverlay.ShowAsync(
-                        loc["Data.CyberBlocked"],
-                        loc["Data.UsbReadBlocked"] ?? "Security check failed. Read aborted.",
-                        loc["Common.OK"], OverlayDialogIcon.Error);
-                    return;
-                }
-            }
-        }
-
-        // Step 3：格式化判斷
+        // Step 2：格式化判斷
+        // （原 Step 2 讀取背景掃描已移至 USB 插入時由 UsbSecurityService.ProcessQueueAsync 處理）
         // 規則 A：usb_format_before_write=1 AND usb_cybersecurity_enabled=1 → 有內容才跳出提示，空碟跳過並紀錄
         // 規則 B：usb_format_before_write=0 → 不跳出提示，直接進行下載
+        var usbSecurity = _serviceProvider.GetService(typeof(IUsbSecurityService)) as IUsbSecurityService;
+        var settings = _serviceProvider.GetService(typeof(SystemSettingService)) as SystemSettingService;
         try
         {
             bool doFormat = false;

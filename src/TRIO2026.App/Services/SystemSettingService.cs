@@ -427,9 +427,9 @@ public class SystemSettingService
     public string UsbScanAllowedFiles
         => GetLiveString("UsbSecurity", "usb_scan_allowed_files", "");
 
-    /// <summary>GUI 讀取隨身碟時背景檢查非法格式檔案（預留）</summary>
-    public bool UsbReadBackgroundCheck
-        => GetLiveString("UsbSecurity", "usb_read_background_check", "0") == "1";
+    /// <summary>GUI 讀取隨身碟時背景檢查非法格式檔案（0=否, 1=是並阻擋, 2=是僅提示）</summary>
+    public int UsbReadBackgroundCheck
+        => int.TryParse(GetLiveString("UsbSecurity", "usb_read_background_check", "0"), out var v) ? v : 0;
 
     /// <summary>GUI 寫入前是否執行快速格式化（預留，若功能 1 已執行則跳過）</summary>
     public bool UsbFormatBeforeWrite

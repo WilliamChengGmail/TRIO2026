@@ -27,4 +27,10 @@ public interface IUsbSecurityService
     /// <summary>對指定隨身碟執行快速格式化（exFAT）</summary>
     /// <returns>(成功, 輸出訊息)</returns>
     Task<(bool Success, string Output)> FormatDriveAsync(UsbDeviceInfo info);
+
+    /// <summary>事件：USB 插入後讀取背景檢查完成（Mode=1/2, HasThreat=是否偵測到威脅）</summary>
+    event EventHandler<(UsbDeviceInfo Info, int Mode, bool HasThreat)> ReadCheckCompleted;
+
+    /// <summary>由 UI 呼叫：模式 2 時使用者按下「我已了解」後回報</summary>
+    Task ReportReadCheckAcknowledgedAsync(UsbDeviceInfo info);
 }

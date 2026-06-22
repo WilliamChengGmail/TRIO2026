@@ -389,6 +389,125 @@ public static class SystemSettingSeed
                 Description = "登入/首頁畫面的語系決定方式：last_user=依據前一位使用者語系 | fixed=統一使用 default_language",
                 Remark = "✅ 已實作 — AppShell 登出/退出時切換語系"
             },
+            new()
+            {
+                Id = 52,
+                Category = "System",
+                Key = "last_user_language",
+                Value = "",
+                Description = "前一位使用者的語系設定（系統自動更新，供 login_screen_language_mode=last_user 使用）",
+                Remark = "✅ 已實作 — UserMenuControl 切換語系時自動寫入"
+            },
+
+            // ── System — 安裝識別與硬體指紋（首次啟動時自動產生，不可手動修改） ──
+            new()
+            {
+                Id = 53,
+                Category = "System",
+                Key = "installation_uuid",
+                Value = "",
+                Description = "TRIO2026 安裝實例 UUID（首次啟動時產生，用於 CFS 設定檔安全驗證）",
+                Remark = "✅ 已實作 — App 首次啟動時自動產生並寫入"
+            },
+            new()
+            {
+                Id = 54,
+                Category = "System",
+                Key = "installation_timestamp",
+                Value = "",
+                Description = "TRIO2026 UUID 首次產生時間",
+                Remark = "✅ 已實作 — 隨 installation_uuid 同時寫入"
+            },
+            new()
+            {
+                Id = 55,
+                Category = "System",
+                Key = "hw_bios_uuid",
+                Value = "",
+                Description = "首次偵測到的主機板 SMBIOS UUID（硬體識別碼，不可變更）",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 56,
+                Category = "System",
+                Key = "hw_machine_name",
+                Value = "",
+                Description = "首次偵測到的 Windows 電腦名稱",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 57,
+                Category = "System",
+                Key = "hw_os_version",
+                Value = "",
+                Description = "首次偵測到的作業系統版本",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 58,
+                Category = "System",
+                Key = "hw_processor",
+                Value = "",
+                Description = "首次偵測到的處理器型號",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 59,
+                Category = "System",
+                Key = "hw_total_memory_gb",
+                Value = "",
+                Description = "首次偵測到的實體記憶體容量 (GB)",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 60,
+                Category = "System",
+                Key = "hw_baseboard",
+                Value = "",
+                Description = "首次偵測到的主機板型號",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 61,
+                Category = "System",
+                Key = "os_current_user",
+                Value = "",
+                Description = "首次執行時的 OS 登入帳號",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 62,
+                Category = "System",
+                Key = "os_current_user_groups",
+                Value = "",
+                Description = "首次執行時登入帳號所屬的本機群組",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 63,
+                Category = "System",
+                Key = "os_administrators",
+                Value = "",
+                Description = "首次偵測到的 Administrators 群組成員（資安基線）",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
+            new()
+            {
+                Id = 64,
+                Category = "System",
+                Key = "os_users",
+                Value = "",
+                Description = "首次偵測到的 Users 群組成員",
+                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+            },
 
             // ══════════════════════════════════════
             // UserMenu — 使用者選單
@@ -515,8 +634,8 @@ public static class SystemSettingSeed
                 Category = "UsbSecurity",
                 Key = "usb_read_background_check",
                 Value = "0",
-                Description = "GUI 讀取隨身碟時，背景檢查是否有非法格式檔案（0=否, 1=是）",
-                Remark = "✅ 設定已預留 — 供後續 GUI 讀取模組介接"
+                Description = "GUI 讀取隨身碟時，背景檢查是否有非法格式檔案（0=否, 1=是並阻擋後續使用, 2=是僅跳出提示訊息由使用者確認）",
+                Remark = "✅ 已實作 — USB 插入時依此值決定掃描模式，於 UsbSecurityService.ProcessQueueAsync 觸發"
             },
             new()
             {

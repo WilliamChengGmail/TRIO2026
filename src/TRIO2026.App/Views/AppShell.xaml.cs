@@ -105,6 +105,60 @@ public partial class AppShell : Window
                 UsbFormatConfirmHost.Show(locService, info, _systemSettings.UsbFormatConfirmDelaySeconds);
             });
         };
+
+        // 訂閱 USB 讀取背景檢查完成事件
+        usbSecurityService.ReadCheckCompleted += (s, args) =>
+        {
+            Dispatcher.Invoke(async () =>
+            {
+                var (info, mode, hasThreat) = args;
+                var loc = LocalizationService.Instance;
+
+                if (!hasThreat) return; // 通過 → 不彈窗
+
+                if (mode == 1)
+                {
+                    // 埋點：阻擋模式 — 彈窗已顯示
+                    EventLogService.Instance?.LogWarning("UsbSecurity", "AppShell",
+                        ErrorCodes.UsbReadCheckBlocked, "USB Read Check Blocked Dialog Shown",
+                        $"{info.ToLogString()} | Mode=1, Action=ShowBlockedDialog, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+
+                    // 阻擋模式：顯示 Error 提示（僅「確定」按鈕）
+                    await DialogOverlay.ShowAsync(
+                        loc["UsbSecurity.ReadCheckBlocked.Title"] ?? "Security Alert",
+                        loc["UsbSecurity.ReadCheckBlocked"] ?? "This USB drive contains potentially dangerous files. Access has been blocked.",
+                        loc["Common.OK"],
+                        Controls.OverlayDialogIcon.Error);
+
+                    // 埋點：使用者已按下「確定」關閉阻擋警告
+                    EventLogService.Instance?.LogInfo("UsbSecurity", "AppShell",
+                        ErrorCodes.GeneralInfo, "USB Read Check Blocked Dialog Dismissed",
+                        $"{info.ToLogString()} | Mode=1, Action=UserDismissedBlockedDialog, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+                }
+                else if (mode == 2)
+                {
+                    // 埋點：提示模式 — 彈窗已顯示
+                    EventLogService.Instance?.LogInfo("UsbSecurity", "AppShell",
+                        ErrorCodes.UsbReadCheckBlocked, "USB Read Check Warning Dialog Shown",
+                        $"{info.ToLogString()} | Mode=2, Action=ShowWarningDialog, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+
+                    // 提示模式：顯示 Warning + 「我已了解」按鈕
+                    await DialogOverlay.ShowAsync(
+                        loc["UsbSecurity.ReadCheckWarning.Title"] ?? "Security Notice",
+                        loc["UsbSecurity.ReadCheckWarning"] ?? "This USB drive contains files that may pose a security risk. Please confirm you have been notified.",
+                        loc["UsbSecurity.ReadCheckAcknowledged"] ?? "I Understand",
+                        Controls.OverlayDialogIcon.Warning);
+
+                    // 埋點：使用者已按下「我已了解」
+                    EventLogService.Instance?.LogInfo("UsbSecurity", "AppShell",
+                        ErrorCodes.UsbReadCheckUserAcknowledged, "USB Read Check Warning Acknowledged by User",
+                        $"{info.ToLogString()} | Mode=2, Action=UserClickedAcknowledge, User={_sessionService.CurrentUser?.Username ?? "Unknown"}");
+
+                    // 回報 UsbSecurityService 解除等待
+                    await usbSecurityService.ReportReadCheckAcknowledgedAsync(info);
+                }
+            });
+        };
     }
 
     private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)

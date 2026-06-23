@@ -16,8 +16,24 @@ namespace TRIO2026.App.Services;
 /// </summary>
 public static class ExcelReportGenerator
 {
+    /// <summary>SampleResult 筆數上限（防 DoS / Memory Exhaustion）</summary>
+    private const int MaxSampleCount = 500;
+
+    /// <summary>CustomPcrSetupJson 大小上限（防 JSON Bomb）</summary>
+    private const int MaxJsonLength = 10_000;
+
     public static void Generate(TestRecord record, string outputPath)
     {
+        // ── P2: DoS 防護 — SampleResult 筆數上限 ──
+        if (record.SampleResults.Count > MaxSampleCount)
+        {
+            EventLogService.Instance?.LogWarning("Data", "ExcelReportGenerator",
+                Core.ErrorCodes.DataExportFailed, "Sample count exceeds limit",
+                $"RunId={record.RunId}, Count={record.SampleResults.Count}, Max={MaxSampleCount}");
+            throw new InvalidOperationException(
+                $"Sample count ({record.SampleResults.Count}) exceeds maximum ({MaxSampleCount})");
+        }
+
         bool isCustom = string.Equals(record.ReportType, "Custom", StringComparison.OrdinalIgnoreCase);
 
         using var wb = new XLWorkbook();
@@ -85,12 +101,12 @@ public static class ExcelReportGenerator
         {
             var row = ws.Row(dataStartRow);
             row.Cell(1).Value = FormatPosition(s);
-            row.Cell(2).Value = s.ConcentrationDisplay ?? "";
+            row.Cell(2).Value = Sanitize(s.ConcentrationDisplay);
             row.Cell(3).Value = s.UtilizedElutedVolume?.ToString("F2") ?? "0.00";
             row.Cell(4).Value = s.PcrWellKit1 ?? "N/A";
             row.Cell(5).Value = s.PcrWellKit2 ?? "N/A";
-            row.Cell(6).Value = s.SampleId ?? "";
-            row.Cell(7).Value = s.ElutionTubeId ?? "";
+            row.Cell(6).Value = Sanitize(s.SampleId);
+            row.Cell(7).Value = Sanitize(s.ElutionTubeId);
             dataStartRow++;
         }
 
@@ -150,14 +166,14 @@ public static class ExcelReportGenerator
         {
             var row = ws.Row(dataStartRow);
             row.Cell(1).Value = FormatPosition(s);
-            row.Cell(2).Value = s.ConcentrationDisplay ?? "";
+            row.Cell(2).Value = Sanitize(s.ConcentrationDisplay);
             row.Cell(3).Value = s.UtilizedElutedVolume?.ToString("F2") ?? "0.00";
             row.Cell(4).Value = s.PcrWellKit1 ?? "N/A";
             row.Cell(5).Value = s.PcrWellKit2 ?? "N/A";
             row.Cell(6).Value = s.PcrWellRxn3 ?? "N/A";
             row.Cell(7).Value = s.PcrWellRxn4 ?? "N/A";
-            row.Cell(8).Value = s.SampleId ?? "";
-            row.Cell(9).Value = s.ElutionTubeId ?? "";
+            row.Cell(8).Value = Sanitize(s.SampleId);
+            row.Cell(9).Value = Sanitize(s.ElutionTubeId);
             dataStartRow++;
         }
 
@@ -272,7 +288,7 @@ public static class ExcelReportGenerator
                 for (int ri = 0; ri < rxnLabels.Length; ri++)
                 {
                     string rxn = rxnLabels[ri];
-                    ws.Cell(row, 2 + ri).Value = rxnValues.TryGetValue(rxn, out var v) ? v : "N/A";
+                    ws.Cell(row, 2 + ri).Value = rxnValues.TryGetValue(rxn, out var v) ? Sanitize(v) : "N/A";
                 }
             }
             else
@@ -288,9 +304,19 @@ public static class ExcelReportGenerator
         if (string.IsNullOrWhiteSpace(json))
             return new Dictionary<string, Dictionary<string, string>>();
 
+        // P2: JSON 大小上限防護
+        if (json.Length > MaxJsonLength)
+        {
+            EventLogService.Instance?.LogWarning("Data", "ExcelReportGenerator",
+                Core.ErrorCodes.DataExportFailed, "CustomPcrSetupJson exceeds size limit",
+                $"Length={json.Length}, Max={MaxJsonLength}");
+            return new Dictionary<string, Dictionary<string, string>>();
+        }
+
         try
         {
-            return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json)
+            var options = new JsonSerializerOptions { MaxDepth = 5 };
+            return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json, options)
                    ?? new Dictionary<string, Dictionary<string, string>>();
         }
         catch
@@ -312,6 +338,13 @@ public static class ExcelReportGenerator
         // 嘗試格式化為 "10.00 ng"
         if (double.TryParse(input, out var d))
             return $"{d:F2} ng";
-        return input;
+        return Sanitize(input);
     }
+
+    /// <summary>
+    /// [P1] 消毒儲存格內容，防止 Excel 公式注入。
+    /// 委託給 DataExportService.SanitizeCellValue 統一處理。
+    /// </summary>
+    private static string Sanitize(string? value)
+        => DataExportService.SanitizeCellValue(value);
 }

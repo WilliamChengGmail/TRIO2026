@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TRIO2026.App.Models;
@@ -45,11 +46,24 @@ public class DataExportService
     /// <param name="targetDrive">目標 USB 碟（如 E:\）</param>
     /// <param name="cancellationToken">取消權杖</param>
     /// <returns>匯出結果</returns>
+    /// <summary>批次匯出上限（防 DoS）</summary>
+    private const int MaxBatchSize = 1000;
+
     public async Task<ExportResult> ExportAsync(
         IReadOnlyList<int> recordIds,
         UsbDeviceInfo targetDrive,
         CancellationToken cancellationToken = default)
     {
+        // ── P2: DoS 防護 — 批次匯出筆數上限 ──
+        if (recordIds.Count > MaxBatchSize)
+        {
+            EventLogService.Instance?.LogWarning("Data", "DataExportService",
+                ErrorCodes.DataExportFailed, "Export batch size exceeded",
+                $"Count={recordIds.Count}, Max={MaxBatchSize}");
+            throw new ArgumentException(
+                $"Export batch size ({recordIds.Count}) exceeds maximum ({MaxBatchSize})");
+        }
+
         var result = new ExportResult
         {
             TotalCount = recordIds.Count,
@@ -141,7 +155,22 @@ public class DataExportService
     /// <summary>匯出單筆 TestRecord</summary>
     private async Task ExportSingleRecordAsync(TestRecord record, string driveLetter)
     {
-        var baseDir = Path.Combine(driveLetter, "trio_data", record.RunId);
+        // ── P0: Path Traversal 防護 ──
+        var safeRunId = ValidateRunId(record.RunId);
+        var baseDir = Path.Combine(driveLetter, "trio_data", safeRunId);
+
+        // 路徑歸屬檢查：確認最終路徑落在 USB trio_data 目錄下
+        var fullPath = Path.GetFullPath(baseDir);
+        var expectedRoot = Path.GetFullPath(Path.Combine(driveLetter, "trio_data"));
+        if (!fullPath.StartsWith(expectedRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            EventLogService.Instance?.LogError("Data", "DataExportService",
+                ErrorCodes.DataExportFailed, "Path traversal detected",
+                $"RunId={record.RunId}, ResolvedPath={fullPath}, ExpectedRoot={expectedRoot}");
+            throw new UnauthorizedAccessException(
+                $"Path traversal detected: {fullPath} is outside {expectedRoot}");
+        }
+
         Directory.CreateDirectory(baseDir);
 
         // 1. runinfo.json
@@ -184,17 +213,18 @@ public class DataExportService
 
         foreach (var s in record.SampleResults.OrderBy(s => s.SamplePosition))
         {
+            // P1: CSV Injection 防護 — 對使用者可控欄位先消毒再跳脫
             sb.AppendLine(string.Join(",",
                 s.SamplePosition?.ToString() ?? "",
                 s.Concentration?.ToString("F4") ?? "",
-                CsvEscape(s.ConcentrationDisplay ?? ""),
+                CsvEscape(SanitizeCellValue(s.ConcentrationDisplay)),
                 s.Volume?.ToString("F2") ?? "",
                 s.UtilizedElutedVolume?.ToString("F2") ?? "",
                 CsvEscape(s.PcrWellKit1 ?? ""),
                 CsvEscape(s.PcrWellKit2 ?? ""),
-                CsvEscape(s.SampleId ?? ""),
-                CsvEscape(s.ElutionTubeId ?? ""),
-                CsvEscape(s.QualityFlag ?? "")
+                CsvEscape(SanitizeCellValue(s.SampleId)),
+                CsvEscape(SanitizeCellValue(s.ElutionTubeId)),
+                CsvEscape(SanitizeCellValue(s.QualityFlag))
             ));
         }
 
@@ -216,6 +246,52 @@ public class DataExportService
         if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
             return $"\"{value.Replace("\"", "\"\"")}\"";
         return value;
+    }
+
+    /// <summary>
+    /// [P1] 消毒儲存格內容，防止 Excel/CSV 公式注入攻擊。
+    /// 若字串以危險字元開頭（=, +, -, @, \t, \r），加上單引號前綴使 Excel 視為純文字。
+    /// </summary>
+    internal static string SanitizeCellValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        char first = value[0];
+        if (first == '=' || first == '+' || first == '-' || first == '@' ||
+            first == '\t' || first == '\r')
+        {
+            return "'" + value;
+        }
+        return value;
+    }
+
+    /// <summary>
+    /// [P0] 驗證 RunId 是否為安全的檔名（只允許數字、字母、底線、連字號）。
+    /// 防止 Path Traversal 攻擊。
+    /// </summary>
+    private static string ValidateRunId(string runId)
+    {
+        if (string.IsNullOrWhiteSpace(runId))
+            throw new ArgumentException("RunId cannot be empty");
+
+        // 只允許英數字、底線、連字號（涵蓋 yyyyMMdd_HHmmss 格式）
+        if (!Regex.IsMatch(runId, @"^[\w\-]+$"))
+        {
+            EventLogService.Instance?.LogError("Data", "DataExportService",
+                ErrorCodes.DataExportFailed, "Invalid RunId characters",
+                $"RunId={runId}");
+            throw new ArgumentException($"RunId contains invalid characters: {runId}");
+        }
+
+        // 額外防禦：禁止路徑穿越字元
+        if (runId.Contains("..") || runId.Contains('/') || runId.Contains('\\'))
+        {
+            EventLogService.Instance?.LogError("Data", "DataExportService",
+                ErrorCodes.DataExportFailed, "RunId path traversal attempt",
+                $"RunId={runId}");
+            throw new ArgumentException($"RunId contains path traversal characters: {runId}");
+        }
+
+        return runId;
     }
 }
 

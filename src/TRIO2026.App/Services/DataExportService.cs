@@ -200,8 +200,12 @@ public class DataExportService
 
         await File.WriteAllTextAsync(csvPath, sb.ToString(), Encoding.UTF8);
 
+        // 3. report.xlsx (Excel — 與機台產出格式一致)
+        var xlsxPath = Path.Combine(baseDir, $"{record.RunId}.xlsx");
+        ExcelReportGenerator.Generate(record, xlsxPath);
+
         // 驗證：確認檔案已建立
-        if (!File.Exists(jsonPath) || !File.Exists(csvPath))
+        if (!File.Exists(jsonPath) || !File.Exists(csvPath) || !File.Exists(xlsxPath))
         {
             throw new IOException($"File verification failed for {record.RunId}");
         }

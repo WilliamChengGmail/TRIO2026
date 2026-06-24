@@ -399,114 +399,130 @@ public static class SystemSettingSeed
                 Remark = "✅ 已實作 — UserMenuControl 切換語系時自動寫入"
             },
 
-            // ── System — 安裝識別與硬體指紋（首次啟動時自動產生，不可手動修改） ──
+            // ══════════════════════════════════════
+            // RuntimeDetect — 執行時期動態偵測（Id 901+）
+            // 首次啟動時由 InstallationUuidService 自動寫入，禁止手動修改
+            // IsReadOnly=1 標記：管理介面不可覆寫此類欄位
+            // ══════════════════════════════════════
             new()
             {
-                Id = 53,
+                Id = 901,
                 Category = "System",
                 Key = "installation_uuid",
                 Value = "",
                 Description = "TRIO2026 安裝實例 UUID（首次啟動時產生，用於 CFS 設定檔安全驗證）",
-                Remark = "✅ 已實作 — App 首次啟動時自動產生並寫入"
+                Remark = "✅ 已實作 — App 首次啟動時由 InstallationUuidService 自動產生並寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 54,
+                Id = 902,
                 Category = "System",
                 Key = "installation_timestamp",
                 Value = "",
-                Description = "TRIO2026 UUID 首次產生時間",
-                Remark = "✅ 已實作 — 隨 installation_uuid 同時寫入"
+                Description = "TRIO2026 UUID 首次產生時間（yyyy-MM-dd HH:mm:ss）",
+                Remark = "✅ 已實作 — 隨 installation_uuid 同時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 55,
+                Id = 903,
                 Category = "System",
                 Key = "hw_bios_uuid",
                 Value = "",
                 Description = "首次偵測到的主機板 SMBIOS UUID（硬體識別碼，不可變更）",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，用於硬體指紋驗證",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 56,
+                Id = 904,
                 Category = "System",
                 Key = "hw_machine_name",
                 Value = "",
-                Description = "首次偵測到的 Windows 電腦名稱",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次偵測到的 Windows 電腦名稱（Environment.MachineName）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 57,
+                Id = 905,
                 Category = "System",
                 Key = "hw_os_version",
                 Value = "",
-                Description = "首次偵測到的作業系統版本",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次偵測到的作業系統版本（Environment.OSVersion）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 58,
+                Id = 906,
                 Category = "System",
                 Key = "hw_processor",
                 Value = "",
-                Description = "首次偵測到的處理器型號",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次偵測到的處理器型號（Win32_Processor.Name）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 59,
+                Id = 907,
                 Category = "System",
                 Key = "hw_total_memory_gb",
                 Value = "",
-                Description = "首次偵測到的實體記憶體容量 (GB)",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次偵測到的實體記憶體容量 (GB)（Win32_ComputerSystem.TotalPhysicalMemory）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 60,
+                Id = 908,
                 Category = "System",
                 Key = "hw_baseboard",
                 Value = "",
-                Description = "首次偵測到的主機板型號",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次偵測到的主機板型號（Win32_BaseBoard.Manufacturer + Product）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 61,
+                Id = 909,
                 Category = "System",
                 Key = "os_current_user",
                 Value = "",
-                Description = "首次執行時的 OS 登入帳號",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次執行時的 OS 登入帳號（Domain\\Username）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 62,
+                Id = 910,
                 Category = "System",
                 Key = "os_current_user_groups",
                 Value = "",
-                Description = "首次執行時登入帳號所屬的本機群組",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次執行時登入帳號所屬的本機群組（WindowsIdentity.Groups）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 63,
+                Id = 911,
                 Category = "System",
                 Key = "os_administrators",
                 Value = "",
-                Description = "首次偵測到的 Administrators 群組成員（資安基線）",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次偵測到的 Administrators 群組成員（資安基線，net localgroup）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
             new()
             {
-                Id = 64,
+                Id = 912,
                 Category = "System",
                 Key = "os_users",
                 Value = "",
-                Description = "首次偵測到的 Users 群組成員",
-                Remark = "✅ 已實作 — HardwareFingerprintService 首次啟動時寫入"
+                Description = "首次偵測到的 Users 群組成員（net localgroup）",
+                Remark = "✅ 已實作 — InstallationUuidService 首次啟動時寫入，禁止手動修改",
+                IsReadOnly = 1,
             },
 
             // ══════════════════════════════════════
@@ -666,7 +682,7 @@ public static class SystemSettingSeed
                 Key = "data_list_layout",
                 Value = "card",
                 Description = "清單頁版面配置（card=卡片模式, compact=緊湊列表, table=表格模式）",
-                Remark = "⏳ 待實作 — DataListPage 讀取此值決定版面"
+                Remark = "✅ 已實作 — DataListPage 讀取此值決定版面"
             },
         };
     }

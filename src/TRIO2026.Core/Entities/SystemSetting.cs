@@ -39,4 +39,11 @@ public class SystemSetting
 
     /// <summary>備註（實作狀態追蹤等）</summary>
     public string? Remark { get; set; }
+
+    /// <summary>
+    /// 是否唯讀（0=可修改，1=系統自動寫入不可修改）
+    /// 執行時期動態偵測的硬體/OS 資料（Id 901+）標記為 1，
+    /// 防止管理介面誤覆寫真實偵測值。
+    /// </summary>
+    public int IsReadOnly { get; set; } = 0;
 }

@@ -131,27 +131,85 @@ public static class DatabaseInitializer
                 }
             }
 
-            // 確保 SystemSetting 表有 Remark 欄位（schema 升級）
+            // ── Schema 升級：確保 IsReadOnly 欄位存在 ──
             {
                 var conn = context.Database.GetDbConnection();
                 if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync();
                 using var pragmaCmd = conn.CreateCommand();
                 pragmaCmd.CommandText = "PRAGMA table_info(SystemSetting)";
-                var hasRemark = false;
+
+                var existingCols = new HashSet<string>();
                 using (var reader = await pragmaCmd.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
-                    {
-                        if (reader.GetString(1) == "Remark") hasRemark = true;
-                    }
+                        existingCols.Add(reader.GetString(1));
                 }
-                if (!hasRemark)
+
+                // 確保 Remark 欄位存在（舊版相容）
+                if (!existingCols.Contains("Remark"))
                 {
                     using var alterCmd = conn.CreateCommand();
                     alterCmd.CommandText = "ALTER TABLE SystemSetting ADD COLUMN Remark TEXT";
                     await alterCmd.ExecuteNonQueryAsync();
                     log?.Info("DbInit", $"[{dbFile}] 已新增 Remark 欄位");
                 }
+
+                // 新增 IsReadOnly 欄位
+                if (!existingCols.Contains("IsReadOnly"))
+                {
+                    using var alterCmd = conn.CreateCommand();
+                    alterCmd.CommandText = "ALTER TABLE SystemSetting ADD COLUMN IsReadOnly INTEGER NOT NULL DEFAULT 0";
+                    await alterCmd.ExecuteNonQueryAsync();
+                    log?.Info("DbInit", $"[{dbFile}] 已新增 IsReadOnly 欄位");
+                }
+            }
+
+            // ── 資料遷移：舊 Id 54~65 的硬體/OS 偵測資料 → 901~912 ──
+            // 若舊版 DB 中仍存在 Id 54~65 的執行時期偵測資料，遷移至正確 Id 範圍
+            {
+                var conn = context.Database.GetDbConnection();
+                if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync();
+
+                // 舊 Id → 新 Id 的對應表
+                var idMigrationMap = new Dictionary<int, int>
+                {
+                    [54] = 901, [55] = 902, [56] = 903, [57] = 904,
+                    [58] = 905, [59] = 906, [60] = 907, [61] = 908,
+                    [62] = 909, [63] = 910, [64] = 911, [65] = 912,
+                };
+
+                var migratedCount = 0;
+                foreach (var (oldId, newId) in idMigrationMap)
+                {
+                    // 確認舊 Id 存在且新 Id 不存在（避免重複遷移）
+                    using var checkCmd = conn.CreateCommand();
+                    checkCmd.CommandText = $"SELECT COUNT(*) FROM SystemSetting WHERE Id={oldId}";
+                    var oldExists = (long)(await checkCmd.ExecuteScalarAsync() ?? 0L) > 0;
+
+                    using var checkNewCmd = conn.CreateCommand();
+                    checkNewCmd.CommandText = $"SELECT COUNT(*) FROM SystemSetting WHERE Id={newId}";
+                    var newExists = (long)(await checkNewCmd.ExecuteScalarAsync() ?? 0L) > 0;
+
+                    if (oldExists && !newExists)
+                    {
+                        using var migrateCmd = conn.CreateCommand();
+                        migrateCmd.CommandText =
+                            $"UPDATE SystemSetting SET Id={newId}, IsReadOnly=1 WHERE Id={oldId}";
+                        await migrateCmd.ExecuteNonQueryAsync();
+                        migratedCount++;
+                    }
+                    else if (oldExists && newExists)
+                    {
+                        // 新 Id 已存在，直接刪除舊的重複資料
+                        using var deleteCmd = conn.CreateCommand();
+                        deleteCmd.CommandText = $"DELETE FROM SystemSetting WHERE Id={oldId}";
+                        await deleteCmd.ExecuteNonQueryAsync();
+                        migratedCount++;
+                    }
+                }
+
+                if (migratedCount > 0)
+                    log?.Info("DbInit", $"[{dbFile}] 已完成 {migratedCount} 筆硬體/OS 偵測資料的 Id 遷移（54~65 → 901~912）");
             }
 
             // 植入 SystemSetting 系統設定（增量：只補入缺少的 key）
@@ -168,12 +226,24 @@ public static class DatabaseInitializer
 
                 if (newSettings.Count > 0)
                 {
+                    // RuntimeDetect 項目（Id 901+）直接使用 Seed 中的指定 Id，不重新分配
+                    // 一般設定項則按現有最大 Id 遞增
                     var maxId = await context.SystemSettings.AnyAsync()
                         ? await context.SystemSettings.MaxAsync(s => s.Id)
                         : 0;
+                    // 取最大值時排除 RuntimeDetect 的 Id 範圍（900+）
+                    if (maxId >= 900) maxId = await context.SystemSettings
+                        .Where(s => s.Id < 900)
+                        .Select(s => s.Id)
+                        .DefaultIfEmpty(0)
+                        .MaxAsync();
+
                     foreach (var seed in newSettings)
                     {
-                        seed.Id = ++maxId;
+                        // Id >= 901 的 RuntimeDetect 項目保留 Seed 指定 Id
+                        if (seed.Id < 901)
+                            seed.Id = ++maxId;
+                        // else: 保留 seed.Id（901~912）
                     }
 
                     context.SystemSettings.AddRange(newSettings);
@@ -185,24 +255,35 @@ public static class DatabaseInitializer
                     log?.Info("DbInit", $"[{dbFile}] 系統設定已是最新，無需補入");
                 }
 
-                // 同步 Remark 備註（每次執行都從 Seed 更新到 DB）
-                var remarkUpdated = 0;
+                // 同步 Description 與 Remark（每次執行都從 Seed 更新到 DB）
+                // 說明：Value 等使用者可修改欄位不更動；只允許 Seed 更新說明性文字
+                var metaUpdated = 0;
                 var allSettings = await context.SystemSettings.ToListAsync();
                 foreach (var seed in settingSeeds)
                 {
                     var existing = allSettings.FirstOrDefault(
                         s => s.Category == seed.Category && s.Key == seed.Key);
-                    if (existing != null && existing.Remark != seed.Remark)
+                    if (existing == null) continue;
+
+                    var changed = false;
+                    if (existing.Description != seed.Description)
+                    {
+                        existing.Description = seed.Description;
+                        changed = true;
+                    }
+                    if (existing.Remark != seed.Remark)
                     {
                         existing.Remark = seed.Remark;
-                        remarkUpdated++;
+                        changed = true;
                     }
+                    if (changed) metaUpdated++;
                 }
-                if (remarkUpdated > 0)
+                if (metaUpdated > 0)
                 {
                     await context.SaveChangesAsync();
-                    log?.Info("DbInit", $"[{dbFile}] 已更新 {remarkUpdated} 筆備註");
+                    log?.Info("DbInit", $"[{dbFile}] 已更新 {metaUpdated} 筆設定的說明/備註");
                 }
+
             }
         }
         catch (Exception ex)

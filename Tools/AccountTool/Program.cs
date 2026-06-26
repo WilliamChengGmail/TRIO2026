@@ -15,12 +15,22 @@ using Microsoft.Data.Sqlite;
 // 製作者: Office of William
 // ══════════════════════════════════════════════════════════════
 
-var dbPath = @"D:\TRIO2026\Database\main.db";
+var dbName = "main.db";
+var currentDir = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+string dbPath = "";
+while (currentDir != null)
+{
+    var p1 = System.IO.Path.Combine(currentDir.FullName, "Database", dbName);
+    if (System.IO.File.Exists(p1)) { dbPath = p1; break; }
+    var p2 = System.IO.Path.Combine(currentDir.FullName, "App", "Database", dbName);
+    if (System.IO.File.Exists(p2)) { dbPath = p2; break; }
+    currentDir = currentDir.Parent;
+}
 
-if (!System.IO.File.Exists(dbPath))
+if (string.IsNullOrEmpty(dbPath))
 {
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"\n  ❌ 找不到資料庫: {dbPath}");
+    Console.WriteLine($"\n  ❌ 找不到資料庫: {dbName}");
     Console.ResetColor();
     return;
 }

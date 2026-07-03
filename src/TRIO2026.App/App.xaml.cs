@@ -1,4 +1,5 @@
 using System.IO;
+using TRIO2026.App.Views;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
@@ -84,6 +85,9 @@ public partial class App : Application
                 "Task 未觀察到的例外");
             ex.SetObserved();
         };
+
+        // ── 提前解析模擬器參數 ──
+        var simArgs = ParseSimulationArgs(e.Args);
 
         // ── 啟動階段日誌（必須在 try 外宣告，確保 catch 也能寫入）──
         TRIO2026.Data.Extensions.StartupLogger? startupLog = null;
@@ -211,10 +215,8 @@ public partial class App : Application
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "language_debug.txt"), langDebug);
             locService.InitializeAsync(defaultLang).GetAwaiter().GetResult();
 
-            // 解析模擬器參數
-            var simArgs = ParseSimulationArgs(e.Args);
-
-            // 建立 AppShell（單一 Window）
+            // 建立 AppShell（單一 Window）— simArgs 已在啟動畫面前提前解析
+            // AppShell 內建 SplashOverlay，顯示 Logo + 旋轉動畫
             var shell = new AppShell(
                 _serviceProvider,
                 _serviceProvider.GetRequiredService<SessionService>(),
@@ -230,15 +232,30 @@ public partial class App : Application
             // ESC / Alt+F4 關閉控制已由 AppShell 透過 SystemSettingService 統一管理
 
             shell.Show();
+
+            // 顯示後淡出啟動畫面
+            shell.HideSplash();
         }
         catch (Exception ex)
         {
             // 嘗試寫入 EventLog（若已初始化）
-            EventLogService.Instance?.LogException(
-                "System", "App", ex, ErrorCodes.UnhandledException, "啟動失敗");
+            try
+            {
+                EventLogService.Instance?.LogException(
+                    "System", "App", ex, ErrorCodes.UnhandledException, "啟動失敗");
+            }
+            catch { }
 
             // 寫入 StartupLogger（EventLogService 不可用時的 fallback）
             startupLog?.Error("App", "啟動失敗", ex);
+
+            // 確保日誌 flush 到 DB，避免 Shutdown 太快導致遺失
+            try
+            {
+                if (EventLogService.Instance is IDisposable disposable)
+                    disposable.Dispose();
+            }
+            catch { }
 
             MessageBox.Show(
                 $"Error ID: {ErrorCodes.UnhandledException}\n\n" +

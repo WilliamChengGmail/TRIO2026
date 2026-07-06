@@ -89,6 +89,31 @@ public partial class App : Application
         // ── 提前解析模擬器參數 ──
         var simArgs = ParseSimulationArgs(e.Args);
 
+        // ── 立即顯示 SplashWindow（消除初始化期間的黑畫面）──
+        var splashWindow = new SplashWindow();
+        var splashStartTime = DateTime.UtcNow;
+        if (simArgs.Embedded)
+        {
+            // 模擬器嵌入模式：設定面板尺寸並置中顯示（不使用 off-screen 定位）
+            // DevLauncher 會偵測到此視窗並用 SetParent 嵌入面板
+            splashWindow.WindowState = WindowState.Normal;
+            splashWindow.Topmost = false;
+            splashWindow.ShowInTaskbar = false;
+            if (simArgs.Width > 0) splashWindow.Width = simArgs.Width;
+            if (simArgs.Height > 0) splashWindow.Height = simArgs.Height;
+            splashWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
+        else if (simArgs.Width > 0 && simArgs.Height > 0 && !simArgs.Fullscreen)
+        {
+            // 非嵌入模擬模式：以面板尺寸置中顯示
+            splashWindow.WindowState = WindowState.Normal;
+            splashWindow.Width = simArgs.Width;
+            splashWindow.Height = simArgs.Height;
+            splashWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
+        splashWindow.Show();
+        splashWindow.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() => { }));
+
         // ── 啟動階段日誌（必須在 try 外宣告，確保 catch 也能寫入）──
         TRIO2026.Data.Extensions.StartupLogger? startupLog = null;
 
@@ -101,6 +126,8 @@ public partial class App : Application
             var startupLogDir = Path.Combine(baseDir, "Logs", "startup-init-logs");
             startupLog = new TRIO2026.Data.Extensions.StartupLogger(startupLogDir);
             startupLog.Info("App", "應用程式啟動", $"BaseDir={baseDir}");
+
+            splashWindow.UpdateStatus("Initializing database...");
 
             // 確保 Database 目錄存在
             if (!Directory.Exists(dbDir))
@@ -122,6 +149,8 @@ public partial class App : Application
             // 切回 App 啟動日誌
             TRIO2026.Data.Extensions.StartupLogger.Current = startupLog;
             startupLog.Info("App", "DB 初始化階段完成");
+
+            splashWindow.UpdateStatus("Loading services...");
 
             // DI 容器
             var services = new ServiceCollection();
@@ -168,10 +197,14 @@ public partial class App : Application
 
             // 啟動事件日誌延後到 sysSettings 載入後記錄（需讀取 UUID）
 
+            splashWindow.UpdateStatus("Checking archives...");
+
             // 啟動歸檔檢查
             var archiveService = _serviceProvider.GetRequiredService<EventLogArchiveService>();
             archiveService.CheckAndArchiveAsync().GetAwaiter().GetResult();
 
+
+            splashWindow.UpdateStatus("Loading settings...");
 
             // 載入系統設定（system_config.db）
             var sysSettings = _serviceProvider.GetRequiredService<SystemSettingService>();
@@ -183,6 +216,8 @@ public partial class App : Application
                 $"UUID={installUuid}, " + (startupLog.HasErrors
                     ? $"StartupLog=HasErrors, LogPath={startupLog.LogPath}"
                     : $"StartupLog=OK, LogPath={startupLog.LogPath}"));
+
+            splashWindow.UpdateStatus("Starting security...");
 
             // 啟動 USB 安全服務監聽
             var usbSecurity = _serviceProvider.GetRequiredService<IUsbSecurityService>();
@@ -215,8 +250,9 @@ public partial class App : Application
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "language_debug.txt"), langDebug);
             locService.InitializeAsync(defaultLang).GetAwaiter().GetResult();
 
-            // 建立 AppShell（單一 Window）— simArgs 已在啟動畫面前提前解析
-            // AppShell 內建 SplashOverlay，顯示 Logo + 旋轉動畫
+            splashWindow.UpdateStatus("Starting application...");
+
+            // 建立 AppShell
             var shell = new AppShell(
                 _serviceProvider,
                 _serviceProvider.GetRequiredService<SessionService>(),
@@ -229,15 +265,28 @@ public partial class App : Application
             // 模擬器參數
             ApplySimArgs(shell, simArgs);
 
-            // ESC / Alt+F4 關閉控制已由 AppShell 透過 SystemSettingService 統一管理
-
+            // 先顯示 AppShell（SplashWindow Topmost 蓋在上方，使用者看不到 AppShell）
             shell.Show();
 
-            // 顯示後淡出啟動畫面
-            shell.HideSplash();
+            // 計算剩餘等待時間（確保至少 3 秒）後淡出 SplashWindow
+            var elapsed = DateTime.UtcNow - splashStartTime;
+            var remaining = TimeSpan.FromSeconds(3) - elapsed;
+            if (remaining > TimeSpan.Zero)
+            {
+                // 等待剩餘時間後淡出
+                var timer = new System.Windows.Threading.DispatcherTimer { Interval = remaining };
+                timer.Tick += (s2, e2) => { timer.Stop(); splashWindow.FadeOutAndClose(); };
+                timer.Start();
+            }
+            else
+            {
+                splashWindow.FadeOutAndClose();
+            }
         }
         catch (Exception ex)
         {
+            try { splashWindow.Close(); } catch { }
+
             // 嘗試寫入 EventLog（若已初始化）
             try
             {

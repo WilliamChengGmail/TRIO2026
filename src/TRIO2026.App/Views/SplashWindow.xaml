@@ -5,8 +5,7 @@
         WindowStyle="None"
         WindowState="Maximized"
         ResizeMode="NoResize"
-        AllowsTransparency="True"
-        Background="Transparent"
+        Background="#0F1B2D"
         Topmost="True"
         ShowInTaskbar="False">
 

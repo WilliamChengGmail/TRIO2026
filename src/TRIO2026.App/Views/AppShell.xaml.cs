@@ -53,8 +53,6 @@ public partial class AppShell : Window
         _uvHardwareService = uvHardwareService;
         _systemSettings = systemSettings;
 
-        // 啟動 Splash Overlay 旋轉動畫
-        StartSplashSpinner();
 
         // 視窗關閉事件 — 根據 DB 設定決定是否允許
         Closing += OnWindowClosing;
@@ -679,45 +677,5 @@ public partial class AppShell : Window
             }
         }
     }
-
-    // ══ Splash Overlay 控制 ══
-
-    /// <summary>啟動 Splash Overlay 的旋轉動畫（失敗不影響 App 啟動）</summary>
-    private void StartSplashSpinner()
-    {
-        try
-        {
-            var animation = new DoubleAnimation(0, 360, TimeSpan.FromSeconds(1.2))
-            {
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            SpinnerRotate.BeginAnimation(RotateTransform.AngleProperty, animation);
-        }
-        catch (Exception ex)
-        {
-            // 動畫啟動失敗不應阻止 App 啟動，靜態畫面仍可顯示
-            System.Diagnostics.Debug.WriteLine($"[SplashSpinner] Animation failed: {ex.Message}");
-        }
-    }
-
-    /// <summary>更新 Splash 狀態文字</summary>
-    public void UpdateSplashStatus(string message)
-    {
-        Dispatcher.Invoke(() => SplashStatusText.Text = message);
-    }
-
-    /// <summary>隱藏 Splash Overlay（淡出動畫）</summary>
-    public void HideSplash()
-    {
-        Dispatcher.Invoke(() =>
-        {
-            SpinnerRotate.BeginAnimation(RotateTransform.AngleProperty, null);
-            var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(400));
-            fadeOut.Completed += (s, e) =>
-            {
-                SplashOverlay.Visibility = Visibility.Collapsed;
-            };
-            SplashOverlay.BeginAnimation(OpacityProperty, fadeOut);
-        });
-    }
 }
+

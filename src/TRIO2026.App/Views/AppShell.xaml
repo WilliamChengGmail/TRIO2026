@@ -32,68 +32,6 @@
                 <controls:UsbDriveSelector x:Name="UsbDriveSelectorHost" />
                 <!-- LockScreen 必須在最上方：鎖定時遮蔽所有面板，解鎖後自動恢復 -->
                 <controls:LockScreenOverlay x:Name="LockScreenHost" />
-
-                <!-- ══ 啟動畫面 Overlay（最上層，初始化完成後隱藏）══ -->
-                <Grid x:Name="SplashOverlay" Visibility="Visible">
-                    <Grid.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
-                            <GradientStop Color="#0F1B2D" Offset="0" />
-                            <GradientStop Color="#1A2744" Offset="0.5" />
-                            <GradientStop Color="#0D2137" Offset="1" />
-                        </LinearGradientBrush>
-                    </Grid.Background>
-
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <!-- Logo（未來可替換為 <Image Source="/Assets/logo.png" />) -->
-                        <TextBlock Text="TRIO"
-                                   FontSize="72" FontWeight="Bold" Foreground="#4FC3F7"
-                                   HorizontalAlignment="Center" FontFamily="Segoe UI">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#4FC3F7" BlurRadius="20" ShadowDepth="0" Opacity="0.4" />
-                            </TextBlock.Effect>
-                        </TextBlock>
-                        <TextBlock Text="2  0  2  6"
-                                   FontSize="28" FontWeight="Light" Foreground="#78909C"
-                                   HorizontalAlignment="Center" Margin="0,-8,0,0" FontFamily="Segoe UI" />
-
-                        <!-- 分隔線 -->
-                        <Border Width="120" Height="1" Background="#2196F3" Opacity="0.5" Margin="0,24,0,24" />
-
-                        <!-- 載入旋轉動畫 -->
-                        <Canvas Width="40" Height="40" HorizontalAlignment="Center" Margin="0,0,0,16">
-                            <Canvas.RenderTransform>
-                                <RotateTransform x:Name="SpinnerRotate" CenterX="20" CenterY="20" />
-                            </Canvas.RenderTransform>
-                            <Path Stroke="#4FC3F7" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
-                                <Path.Data>
-                                    <PathGeometry>
-                                        <PathFigure StartPoint="20,2" IsClosed="False">
-                                            <ArcSegment Point="2,20" Size="18,18" SweepDirection="Clockwise" IsLargeArc="False" />
-                                        </PathFigure>
-                                        <PathFigure StartPoint="2,20" IsClosed="False">
-                                            <ArcSegment Point="20,38" Size="18,18" SweepDirection="Clockwise" IsLargeArc="False" />
-                                        </PathFigure>
-                                        <PathFigure StartPoint="20,38" IsClosed="False">
-                                            <ArcSegment Point="38,20" Size="18,18" SweepDirection="Clockwise" IsLargeArc="False" />
-                                        </PathFigure>
-                                    </PathGeometry>
-                                </Path.Data>
-                            </Path>
-                        </Canvas>
-
-                        <!-- 狀態文字 -->
-                        <TextBlock x:Name="SplashStatusText"
-                                   Text="System Initializing..."
-                                   FontSize="14" Foreground="#607D8B"
-                                   HorizontalAlignment="Center" FontFamily="Segoe UI" />
-                    </StackPanel>
-
-                    <!-- 底部版權 -->
-                    <TextBlock Text="PlexBio Co., Ltd."
-                               FontSize="12" Foreground="#37474F"
-                               HorizontalAlignment="Center" VerticalAlignment="Bottom"
-                               Margin="0,0,0,30" FontFamily="Segoe UI" />
-                </Grid>
             </Grid>
         </Border>
     </Viewbox>

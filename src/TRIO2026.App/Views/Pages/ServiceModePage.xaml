@@ -4,18 +4,18 @@
              xmlns:controls="clr-namespace:TRIO2026.App.Controls"
              xmlns:svc="clr-namespace:TRIO2026.App.Services">
 
-    <Grid Background="#0D1B2A">
+    <Grid Background="{DynamicResource AppBackgroundBrush}">
         <!-- Service Mode 識別內容 -->
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="🔧" FontSize="48" HorizontalAlignment="Center"
                        Margin="0,0,0,16"/>
             <TextBlock Text="{Binding [ServiceMode.Title], Source={x:Static svc:LocalizationService.Instance}}"
                        FontSize="32" FontWeight="Bold"
-                       Foreground="#F0F4F8" HorizontalAlignment="Center"
+                       Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"
                        Margin="0,0,0,8"/>
             <TextBlock Text="{Binding [ServiceMode.Placeholder], Source={x:Static svc:LocalizationService.Instance}}"
                        FontSize="16"
-                       Foreground="#7B8FA8" HorizontalAlignment="Center"/>
+                       Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
         </StackPanel>
 
         <!-- 共用使用者選單（覆蓋在最上層） -->

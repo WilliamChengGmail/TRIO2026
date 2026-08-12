@@ -16,7 +16,7 @@
                 Padding="36,32"
                 Margin="32">
             <Border.Background>
-                <SolidColorBrush Color="#1E2D45" Opacity="0.97" />
+                <SolidColorBrush Color="{DynamicResource OverlayBackground}" Opacity="0.97" />
             </Border.Background>
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="40" ShadowDepth="0" Opacity="0.5" />
@@ -55,7 +55,7 @@
                     <TextBox x:Name="UsernameBox"
                              Background="Transparent"
                              BorderThickness="0"
-                             Foreground="#F0F4F8"
+                             Foreground="{DynamicResource TextPrimaryBrush}"
                              CaretBrush="#80D8FF"
                              FontSize="20" FontFamily="Segoe UI"
                              VerticalContentAlignment="Center" />
@@ -68,7 +68,7 @@
                     <PasswordBox x:Name="PasswordBox"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#F0F4F8"
+                                 Foreground="{DynamicResource TextPrimaryBrush}"
                                  CaretBrush="#80D8FF"
                                  FontSize="20" FontFamily="Segoe UI"
                                  VerticalContentAlignment="Center" />
@@ -78,7 +78,7 @@
                 <TextBlock x:Name="ErrorText"
                            Text=""
                            FontSize="15"
-                           Foreground="#EF5350"
+                           Foreground="{DynamicResource ErrorRedBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,4,0,16"
                            Visibility="Collapsed" />
@@ -101,7 +101,7 @@
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsPressed" Value="True">
                                     <Setter TargetName="Bd" Property="Background" Value="#14725A"/>
-                                    <Setter TargetName="Bd" Property="BorderBrush" Value="#4CAF50"/>
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource SuccessGreenBrush}"/>
                                     <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
@@ -128,7 +128,7 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="Bd" Property="Background" Value="#2A3D5E"/>
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardBackgroundAltBrush}"/>
                                     <Setter TargetName="Bd" Property="BorderBrush" Value="#78909C"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>

@@ -5,13 +5,6 @@
              xmlns:svc="clr-namespace:TRIO2026.App.Services">
 
     <UserControl.Resources>
-        <Color x:Key="PrimaryBlue">#42A5F5</Color>
-        <Color x:Key="AccentTeal">#26C6DA</Color>
-        <Color x:Key="TextPrimary">#F0F4F8</Color>
-        <Color x:Key="TextSecondary">#B0BEC5</Color>
-
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}" />
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}" />
 
         <Style x:Key="MenuButton" TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
@@ -20,8 +13,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="CardBorder"
-                                Background="#1E2D4A" CornerRadius="16"
-                                BorderBrush="#2A3D5E" BorderThickness="1"
+                                Background="{DynamicResource CardBackgroundBrush}" CornerRadius="16"
+                                BorderBrush="{DynamicResource CardBackgroundAltBrush}" BorderThickness="1"
                                 Padding="20" MinHeight="160">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="12" ShadowDepth="2"
@@ -31,8 +24,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="CardBorder" Property="Background" Value="#2A4570" />
-                                <Setter TargetName="CardBorder" Property="BorderBrush" Value="#64B5F6" />
+                                <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource ControlHoverBrush}" />
+                                <Setter TargetName="CardBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBlueHoverBrush}" />
                                 <Setter TargetName="CardBorder" Property="BorderThickness" Value="2" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
@@ -72,7 +65,7 @@
                         </TextBlock.Foreground>
                     </TextBlock>
                     <TextBlock Text="2026" FontSize="16" FontWeight="Light" FontFamily="Segoe UI"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                VerticalAlignment="Center" Margin="4,4,0,0" />
                 </StackPanel>
 
@@ -97,10 +90,10 @@
                     <TextBlock Text="🧬" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,8" />
                     <TextBlock Text="{Binding [Menu.IntelliPlex], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="22" FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
                     <TextBlock Text="{Binding [Menu.IntelliPlexSub], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="18"
-                               Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -109,10 +102,10 @@
                     <TextBlock Text="🧪" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,8" />
                     <TextBlock Text="{Binding [Menu.Custom], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="22" FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
                     <TextBlock Text="{Binding [Menu.CustomSub], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="18"
-                               Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -121,10 +114,10 @@
                     <TextBlock Text="📊" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,8" />
                     <TextBlock Text="{Binding [Menu.Data], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="22" FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
                     <TextBlock Text="{Binding [Menu.DataSub], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="18"
-                               Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -133,10 +126,10 @@
                     <TextBlock Text="🛠" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,8" />
                     <TextBlock Text="{Binding [Menu.Setting], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="22" FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
                     <TextBlock Text="{Binding [Menu.SettingSub], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="18"
-                               Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -146,10 +139,10 @@
                     <TextBlock Text="💡" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,6" />
                     <TextBlock Text="{Binding [Menu.UV], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="22" FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" />
                     <TextBlock Text="{Binding [Menu.UVSub], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="18"
-                               Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                 </StackPanel>
             </Button>
         </Grid>
@@ -161,12 +154,12 @@
                            Foreground="#37474F" VerticalAlignment="Center" HorizontalAlignment="Left" />
                 <TextBlock x:Name="CountdownText"
                            FontSize="11" FontFamily="Segoe UI"
-                           Foreground="#26C6DA" VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentTealBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"
                            Visibility="Collapsed" />
                 <TextBlock x:Name="StatusText"
                            Text="{Binding [Menu.StatusReady], Source={x:Static svc:LocalizationService.Instance}}"
                            FontSize="11" FontFamily="Segoe UI"
-                           Foreground="#4CAF50" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                           Foreground="{DynamicResource SuccessGreenBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" />
             </Grid>
         </Border>
 

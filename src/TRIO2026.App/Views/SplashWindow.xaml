@@ -5,7 +5,7 @@
         WindowStyle="None"
         WindowState="Maximized"
         ResizeMode="NoResize"
-        Background="#0F1B2D"
+        Background="{DynamicResource AppBackgroundBrush}"
         Topmost="True"
         ShowInTaskbar="False">
 
@@ -33,9 +33,9 @@
     <Grid>
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
-                <GradientStop Color="#0F1B2D" Offset="0" />
-                <GradientStop Color="#1A2744" Offset="0.5" />
-                <GradientStop Color="#0D2137" Offset="1" />
+                <GradientStop Color="{DynamicResource SplashGradient1}" Offset="0" />
+                <GradientStop Color="{DynamicResource SplashGradient2}" Offset="0.5" />
+                <GradientStop Color="{DynamicResource SplashGradient3}" Offset="1" />
             </LinearGradientBrush>
         </Grid.Background>
 
@@ -48,25 +48,25 @@
             <TextBlock Text="TRIO"
                        FontSize="72"
                        FontWeight="Bold"
-                       Foreground="#4FC3F7"
+                       Foreground="{DynamicResource SplashLogoBrush}"
                        HorizontalAlignment="Center"
                        FontFamily="Segoe UI">
                 <TextBlock.Effect>
-                    <DropShadowEffect Color="#4FC3F7" BlurRadius="20" ShadowDepth="0" Opacity="0.4" />
+                    <DropShadowEffect Color="{DynamicResource SplashLogoColor}" BlurRadius="20" ShadowDepth="0" Opacity="0.4" />
                 </TextBlock.Effect>
             </TextBlock>
 
             <TextBlock Text="2  0  2  6"
                        FontSize="28"
                        FontWeight="Light"
-                       Foreground="#78909C"
+                       Foreground="{DynamicResource SplashTextBrush}"
                        HorizontalAlignment="Center"
                        Margin="0,-8,0,0"
                        FontFamily="Segoe UI" />
 
             <!-- 分隔線 -->
             <Border Width="120" Height="1"
-                    Background="#2196F3" Opacity="0.5"
+                    Background="{DynamicResource SplashLineBrush}" Opacity="0.5"
                     Margin="0,24,0,24" />
 
             <!-- 載入旋轉動畫 -->
@@ -78,7 +78,7 @@
                 </Canvas.RenderTransform>
 
                 <!-- 圓弧 spinner（用 Path 繪製 3/4 圓弧） -->
-                <Path Stroke="#4FC3F7" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                <Path Stroke="{DynamicResource SplashSpinnerBrush}" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
                     <Path.Data>
                         <PathGeometry>
                             <PathFigure StartPoint="20,2" IsClosed="False">
@@ -102,7 +102,7 @@
             <TextBlock x:Name="StatusText"
                        Text="System Initializing..."
                        FontSize="14"
-                       Foreground="#607D8B"
+                       Foreground="{DynamicResource SplashStatusBrush}"
                        HorizontalAlignment="Center"
                        FontFamily="Segoe UI" />
         </StackPanel>
@@ -110,7 +110,7 @@
         <!-- 底部版權資訊 -->
         <TextBlock Text="PlexBio Co., Ltd."
                    FontSize="12"
-                   Foreground="#37474F"
+                   Foreground="{DynamicResource SplashCopyrightBrush}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Bottom"
                    Margin="0,0,0,40"

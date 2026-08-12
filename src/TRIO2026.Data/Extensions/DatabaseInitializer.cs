@@ -232,11 +232,13 @@ public static class DatabaseInitializer
                         ? await context.SystemSettings.MaxAsync(s => s.Id)
                         : 0;
                     // 取最大值時排除 RuntimeDetect 的 Id 範圍（900+）
-                    if (maxId >= 900) maxId = await context.SystemSettings
-                        .Where(s => s.Id < 900)
-                        .Select(s => s.Id)
-                        .DefaultIfEmpty(0)
-                        .MaxAsync();
+                    if (maxId >= 900) 
+                    {
+                        var maxIdNullable = await context.SystemSettings
+                            .Where(s => s.Id < 900)
+                            .MaxAsync(s => (int?)s.Id);
+                        maxId = maxIdNullable ?? 0;
+                    }
 
                     foreach (var seed in newSettings)
                     {

@@ -446,4 +446,15 @@ public class SystemSettingService
     /// <summary>設定清單頁版面配置（寫入 DB）</summary>
     public void SetDataListLayout(string layout)
         => SetLiveString("DataPage", "data_list_layout", layout);
+    // ═══════════════════════════════════════
+    // UI — 介面設定
+    // ═══════════════════════════════════════
+
+    /// <summary>目前介面主題 (Dark/Light)</summary>
+    public string UITheme
+        => GetLiveString("UI", "Theme", "Dark");
+
+    /// <summary>設定介面主題 (寫入 DB)</summary>
+    public void SetUITheme(string theme)
+        => SetLiveString("UI", "Theme", theme);
 }

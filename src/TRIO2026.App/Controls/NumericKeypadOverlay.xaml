@@ -81,7 +81,7 @@
                 Padding="24,20"
                 MinWidth="400">
             <Border.Background>
-                <SolidColorBrush Color="#2A3A5C" Opacity="0.97" />
+                <SolidColorBrush Color="{DynamicResource CardBackgroundAlt}" Opacity="0.97" />
             </Border.Background>
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="40" ShadowDepth="0" Opacity="0.5" />
@@ -92,12 +92,12 @@
                 <TextBlock x:Name="TitleText"
                            Text="{Binding [NumericKeypad.Title], Source={x:Static svc:LocalizationService.Instance}}"
                            FontSize="24" FontWeight="SemiBold"
-                           Foreground="#B0BEC5"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,12" />
 
                 <!-- 密碼顯示區 -->
-                <Border Background="#1E2D45" CornerRadius="12"
+                <Border Background="{DynamicResource OverlayBackgroundBrush}" CornerRadius="12"
                         Height="64" Width="340" Margin="0,0,0,16"
                         Padding="16,0"
                         BorderBrush="#4A6A9A" BorderThickness="1"
@@ -111,7 +111,7 @@
                                    Grid.Column="0"
                                    Text=""
                                    FontSize="36" FontWeight="Bold" FontFamily="Consolas"
-                                   Foreground="#F0F4F8"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
                                    TextTrimming="CharacterEllipsis" />

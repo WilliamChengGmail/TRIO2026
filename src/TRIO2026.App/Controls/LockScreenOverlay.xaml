@@ -5,10 +5,6 @@
              Visibility="Collapsed">
 
     <UserControl.Resources>
-        <Color x:Key="PrimaryBlue">#42A5F5</Color>
-        <Color x:Key="AccentTeal">#26C6DA</Color>
-        <Color x:Key="ErrorRed">#EF5350</Color>
-        <SolidColorBrush x:Key="ErrorRedBrush" Color="{StaticResource ErrorRed}" />
 
         <Storyboard x:Key="ShakeAnimation">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)">
@@ -32,7 +28,7 @@
                 CornerRadius="24" Padding="40,32"
                 Margin="0,0,0,80">
             <Border.Background>
-                <SolidColorBrush Color="#2A3A5C" Opacity="0.95" />
+                <SolidColorBrush Color="{DynamicResource CardBackgroundAlt}" Opacity="0.95" />
             </Border.Background>
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="50" ShadowDepth="0" Opacity="0.5" />
@@ -49,7 +45,7 @@
                 <!-- 標題 -->
                 <TextBlock x:Name="TitleText" Text="Screen Locked"
                            FontSize="24" FontWeight="Bold"
-                           Foreground="#F0F4F8"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            HorizontalAlignment="Center" Margin="0,0,0,4" />
 
                 <!-- 使用者資訊 -->
@@ -64,7 +60,7 @@
 
                 <!-- 密碼標籤 -->
                 <TextBlock x:Name="LblPassword" Text="Password"
-                           FontSize="14" Foreground="#B0BEC5"
+                           FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}"
                            Margin="4,0,0,6" />
 
                 <!-- 密碼輸入框 -->
@@ -79,7 +75,7 @@
                         </Grid.ColumnDefinitions>
                         <PasswordBox x:Name="PasswordBox" Grid.Column="0"
                                      Background="Transparent" BorderThickness="0"
-                                     Foreground="#F0F4F8" CaretBrush="#80D8FF"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" CaretBrush="#80D8FF"
                                      SelectionBrush="#5542A5F5"
                                      FontSize="20" FontFamily="Segoe UI"
                                      VerticalContentAlignment="Center"
@@ -106,7 +102,7 @@
 
                 <!-- 錯誤訊息 -->
                 <TextBlock x:Name="ErrorText"
-                           FontSize="13" Foreground="{StaticResource ErrorRedBrush}"
+                           FontSize="13" Foreground="{DynamicResource ErrorRedBrush}"
                            HorizontalAlignment="Center" Margin="0,0,0,16"
                            Visibility="Collapsed" />
 
@@ -151,7 +147,7 @@
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd" CornerRadius="12" Padding="8,10"
-                                        Background="#1E2D45" BorderBrush="#4A6A9A" BorderThickness="1">
+                                        Background="{DynamicResource OverlayBackgroundBrush}" BorderBrush="#4A6A9A" BorderThickness="1">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -183,10 +179,10 @@
                 CornerRadius="16" Padding="20,16"
                 Visibility="Collapsed">
             <Border.Background>
-                <SolidColorBrush Color="#EF5350" Opacity="0.9" />
+                <SolidColorBrush Color="{DynamicResource ErrorRed}" Opacity="0.9" />
             </Border.Background>
             <Border.Effect>
-                <DropShadowEffect Color="#EF5350" BlurRadius="20" ShadowDepth="0" Opacity="0.4" />
+                <DropShadowEffect Color="{DynamicResource ErrorRed}" BlurRadius="20" ShadowDepth="0" Opacity="0.4" />
             </Border.Effect>
             <StackPanel>
                 <TextBlock x:Name="PassthroughTitle"
@@ -204,7 +200,7 @@
                 Width="440" CornerRadius="20" Padding="32,28"
                 Visibility="Collapsed">
             <Border.Background>
-                <SolidColorBrush Color="#2A3A5C" Opacity="0.98" />
+                <SolidColorBrush Color="{DynamicResource CardBackgroundAlt}" Opacity="0.98" />
             </Border.Background>
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="40" ShadowDepth="0" Opacity="0.6" />
@@ -221,7 +217,7 @@
 
                 <!-- 警告訊息 -->
                 <TextBlock x:Name="ConfirmMessage" Text=""
-                           FontSize="15" Foreground="#B0BEC5"
+                           FontSize="15" Foreground="{DynamicResource TextSecondaryBrush}"
                            HorizontalAlignment="Center" TextWrapping="Wrap"
                            TextAlignment="Center" Margin="0,0,0,24" />
 
@@ -240,7 +236,7 @@
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border CornerRadius="12" Padding="0,10"
-                                        Background="#1E2D45" BorderBrush="#4A6A9A" BorderThickness="1">
+                                        Background="{DynamicResource OverlayBackgroundBrush}" BorderBrush="#4A6A9A" BorderThickness="1">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                             </ControlTemplate>
@@ -255,7 +251,7 @@
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border CornerRadius="12" Padding="0,10"
-                                        Background="#EF5350">
+                                        Background="{DynamicResource ErrorRedBrush}">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                             </ControlTemplate>

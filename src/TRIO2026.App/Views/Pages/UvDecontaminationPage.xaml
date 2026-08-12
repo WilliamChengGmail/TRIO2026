@@ -3,17 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:TRIO2026.App.Controls"
              xmlns:svc="clr-namespace:TRIO2026.App.Services"
-             Background="#0A1628">
+             Background="{DynamicResource AppBackgroundBrush}">
 
     <UserControl.Resources>
-        <Color x:Key="PrimaryBlue">#42A5F5</Color>
-        <Color x:Key="StopRed">#E53935</Color>
-        <Color x:Key="TextPrimary">#F0F4F8</Color>
-        <Color x:Key="TextSecondary">#B0BEC5</Color>
-
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
-        <SolidColorBrush x:Key="StopRedBrush" Color="{StaticResource StopRed}"/>
 
         <!-- 觸控方向鍵樣式 -->
         <Style x:Key="ArrowButton" TargetType="Button">
@@ -25,14 +17,14 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="#2A3D5E" CornerRadius="32"
-                                BorderBrush="#3A5070" BorderThickness="1">
+                        <Border x:Name="Bd" Background="{DynamicResource CardBackgroundAltBrush}" CornerRadius="32"
+                                BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#42A5F5"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBlueBrush}"/>
                                 <Setter TargetName="Bd" Property="BorderBrush" Value="#90CAF9"/>
                                 <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
                             </Trigger>
@@ -56,16 +48,16 @@
         </Grid.RowDefinitions>
 
         <!-- ═══ 頂部列 ═══ -->
-        <Border Grid.Row="0" Background="#0D1B30"
-                BorderBrush="#1A2F4D" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderDarkBrush}" BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <TextBlock Text="TRIO 2026"
-                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            FontSize="14" VerticalAlignment="Center"
                            HorizontalAlignment="Left"/>
 
                 <TextBlock Text="{Binding [UV.Title], Source={x:Static svc:LocalizationService.Instance}}"
-                           Foreground="{StaticResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            FontSize="20" FontWeight="SemiBold"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center"/>
@@ -129,7 +121,7 @@
                     <Ellipse Width="100" Height="100">
                         <Ellipse.Style>
                             <Style TargetType="Ellipse">
-                                <Setter Property="Fill" Value="#1A2F4D"/>
+                                <Setter Property="Fill" Value="{DynamicResource BorderDarkBrush}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsRunning}" Value="True">
                                         <DataTrigger.EnterActions>
@@ -146,7 +138,7 @@
                                                 <Storyboard>
                                                     <ColorAnimation
                                                         Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
-                                                        To="#1A2F4D" Duration="0:0:0.3"/>
+                                                        To="{DynamicResource BorderDarkBrush}" Duration="0:0:0.3"/>
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </DataTrigger.ExitActions>
@@ -164,8 +156,8 @@
                                 <Setter Property="Fill">
                                     <Setter.Value>
                                         <RadialGradientBrush>
-                                            <GradientStop Color="#2A3D5E" Offset="0"/>
-                                            <GradientStop Color="#1A2F4D" Offset="1"/>
+                                            <GradientStop Color="{DynamicResource CardBackgroundAlt}" Offset="0"/>
+                                            <GradientStop Color="{DynamicResource BorderDark}" Offset="1"/>
                                         </RadialGradientBrush>
                                     </Setter.Value>
                                 </Setter>
@@ -231,7 +223,7 @@
 
                     <TextBlock Text="{Binding SelectedDisplayLabel}"
                                FontSize="48" FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
                                VerticalAlignment="Center"
                                Margin="24,0"
                                MinWidth="160"
@@ -245,7 +237,7 @@
                 <!-- 倒數計時顯示（啟動後顯示） -->
                 <TextBlock Text="{Binding RemainingDisplay}"
                            FontSize="64" FontWeight="Bold"
-                           Foreground="{StaticResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,20"
                            Visibility="{Binding ShowCountdown, Converter={StaticResource BoolToVis}}"/>
@@ -260,7 +252,7 @@
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="BtnBd" CornerRadius="8"
-                                    Background="#42A5F5">
+                                    Background="{DynamicResource PrimaryBlueBrush}">
                                 <TextBlock x:Name="BtnText"
                                            Text="{Binding [UV.Start], Source={x:Static svc:LocalizationService.Instance}}"
                                            FontSize="20" FontWeight="Bold"
@@ -271,7 +263,7 @@
                             <ControlTemplate.Triggers>
                                 <DataTrigger Binding="{Binding IsRunning}" Value="True">
                                     <Setter TargetName="BtnBd" Property="Background"
-                                            Value="{StaticResource StopRedBrush}"/>
+                                            Value="{DynamicResource StopRedBrush}"/>
                                     <Setter TargetName="BtnText" Property="Text"
                                             Value="{Binding [UV.Stop], Source={x:Static svc:LocalizationService.Instance}}"/>
                                 </DataTrigger>
@@ -290,7 +282,7 @@
 
                 <!-- 門板尚未關閉警告文字 (使用 Opacity 控制顯示，保留排版空間避免跳動) -->
                 <TextBlock Text="{Binding [UV.DoorNotClosed], Source={x:Static svc:LocalizationService.Instance}}"
-                           Foreground="{StaticResource StopRedBrush}"
+                           Foreground="{DynamicResource StopRedBrush}"
                            FontSize="16" FontWeight="SemiBold"
                            HorizontalAlignment="Center"
                            Margin="0,12,0,0">
@@ -309,20 +301,20 @@
         </Grid>
 
         <!-- ═══ 底部列 ═══ -->
-        <Border Grid.Row="2" Background="#0D1B30"
-                BorderBrush="#1A2F4D" BorderThickness="0,1,0,0">
+        <Border Grid.Row="2" Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderDarkBrush}" BorderThickness="0,1,0,0">
             <Grid Margin="16,0">
                 <TextBlock Text="TRIO2026 v2026.1.0"
-                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            FontSize="11" VerticalAlignment="Center"
                            HorizontalAlignment="Left"/>
                 <TextBlock x:Name="CountdownText"
                            FontSize="11" FontFamily="Segoe UI"
-                           Foreground="#26C6DA" VerticalAlignment="Center"
+                           Foreground="{DynamicResource AccentTealBrush}" VerticalAlignment="Center"
                            HorizontalAlignment="Center"
                            Visibility="Collapsed"/>
                 <TextBlock Text="{Binding [Common.Ready], Source={x:Static svc:LocalizationService.Instance}}"
-                           Foreground="#4CAF50" FontSize="11"
+                           Foreground="{DynamicResource SuccessGreenBrush}" FontSize="11"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Right"/>
             </Grid>

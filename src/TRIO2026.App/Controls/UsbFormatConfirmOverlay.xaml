@@ -15,7 +15,7 @@
                 Padding="36,32"
                 Margin="32">
             <Border.Background>
-                <SolidColorBrush Color="#1E2D45" Opacity="0.97" />
+                <SolidColorBrush Color="{DynamicResource OverlayBackground}" Opacity="0.97" />
             </Border.Background>
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="40" ShadowDepth="0" Opacity="0.5" />
@@ -26,14 +26,14 @@
                 <TextBlock x:Name="TitleText"
                            Text="⚠️ USB 專碟專用"
                            FontSize="28" FontWeight="SemiBold"
-                           Foreground="#EF5350"
+                           Foreground="{DynamicResource ErrorRedBrush}"
                            Margin="0,0,0,24" />
 
                 <!-- 偵測提示 -->
                 <TextBlock x:Name="DetectedText"
                            Text="偵測到 USB 隨身碟:"
                            FontSize="20"
-                           Foreground="#F0F4F8"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            Margin="0,0,0,16" />
 
                 <!-- 裝置資訊區塊 -->
@@ -52,7 +52,7 @@
                 <TextBlock x:Name="WarningText"
                            Text="為確保資訊安全，即將執行快速格式化。此操作將清除隨身碟上所有資料。"
                            FontSize="18"
-                           Foreground="#EF5350"
+                           Foreground="{DynamicResource ErrorRedBrush}"
                            TextWrapping="Wrap"
                            Margin="0,0,0,32" />
 
@@ -70,7 +70,7 @@
                             Click="CancelButton_Click"
                             Height="56"
                             FontSize="20" FontWeight="SemiBold"
-                            Foreground="#F0F4F8"
+                            Foreground="{DynamicResource TextPrimaryBrush}"
                             BorderThickness="0"
                             Cursor="Hand">
                         <Button.Template>

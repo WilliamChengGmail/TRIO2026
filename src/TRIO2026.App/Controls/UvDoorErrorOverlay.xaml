@@ -35,7 +35,7 @@
                       HorizontalAlignment="Center"
                       Margin="0,0,0,24">
                     <!-- 紅色圓底 -->
-                    <Ellipse Fill="#E53935" Width="120" Height="120"/>
+                    <Ellipse Fill="{DynamicResource StopRedBrush}" Width="120" Height="120"/>
                     <!-- 白色叉叉 (X) -->
                     <Canvas Width="120" Height="120">
                         <Line X1="38" Y1="38" X2="82" Y2="82"
@@ -64,7 +64,7 @@
                 <!-- 錯誤訊息 -->
                 <TextBlock Text="{Binding [UV.DoorErrorMessage], Source={x:Static svc:LocalizationService.Instance}}"
                            FontSize="20"
-                           Foreground="#EF5350"
+                           Foreground="{DynamicResource ErrorRedBrush}"
                            TextWrapping="Wrap"
                            TextAlignment="Center"
                            HorizontalAlignment="Center"

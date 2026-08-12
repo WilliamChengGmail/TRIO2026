@@ -16,7 +16,7 @@
                 Padding="32,28"
                 Margin="32">
             <Border.Background>
-                <SolidColorBrush Color="#1E2D45" Opacity="0.97" />
+                <SolidColorBrush Color="{DynamicResource OverlayBackground}" Opacity="0.97" />
             </Border.Background>
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="40" ShadowDepth="0" Opacity="0.5" />
@@ -91,7 +91,7 @@
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsPressed" Value="True">
                                         <Setter TargetName="Bd" Property="Opacity" Value="0.75"/>
-                                        <Setter TargetName="Bd" Property="BorderBrush" Value="#4CAF50"/>
+                                        <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource SuccessGreenBrush}"/>
                                         <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
@@ -115,8 +115,8 @@
                                 <Border x:Name="Bd" CornerRadius="8" Padding="16,8">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                            <GradientStop Color="#EF5350" Offset="0" />
-                                            <GradientStop Color="#E53935" Offset="1" />
+                                            <GradientStop Color="{DynamicResource ErrorRed}" Offset="0" />
+                                            <GradientStop Color="{DynamicResource StopRed}" Offset="1" />
                                         </LinearGradientBrush>
                                     </Border.Background>
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -155,7 +155,7 @@
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsPressed" Value="True">
-                                        <Setter TargetName="Bd" Property="Background" Value="#2A3D5E"/>
+                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardBackgroundAltBrush}"/>
                                         <Setter TargetName="Bd" Property="BorderBrush" Value="#78909C"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>

@@ -18,7 +18,7 @@
                     <TextBlock Text="👥" FontSize="26" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <TextBlock x:Name="PageTitle" Text="Account Management"
                                FontSize="22" FontWeight="SemiBold"
-                               Foreground="#F0F4F8" VerticalAlignment="Center"/>
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -74,7 +74,7 @@
                                             <ControlTemplate TargetType="Button">
                                                 <Border x:Name="Bd" Background="#1A2D47"
                                                         CornerRadius="8" Padding="14,12"
-                                                        BorderBrush="#2A3D5E" BorderThickness="1">
+                                                        BorderBrush="{DynamicResource CardBackgroundAltBrush}" BorderThickness="1">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="*"/>
@@ -83,7 +83,7 @@
                                                         <StackPanel Grid.Column="0">
                                                             <TextBlock Text="{Binding DisplayLabel}"
                                                                        FontSize="16" FontWeight="SemiBold"
-                                                                       Foreground="#F0F4F8"/>
+                                                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                             <TextBlock Text="{Binding SubLabel}"
                                                                        FontSize="13"
                                                                        Foreground="#78909C"/>
@@ -134,13 +134,13 @@
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock x:Name="SelectedUserName"
                                            FontSize="18" FontWeight="SemiBold"
-                                           Foreground="#F0F4F8"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 <TextBlock x:Name="SelectedUserRole"
                                            FontSize="13" Foreground="#78909C"/>
                             </StackPanel>
                         </StackPanel>
 
-                        <Border Height="1" Background="#2A3D5E" Margin="0,0,0,16"/>
+                        <Border Height="1" Background="{DynamicResource CardBackgroundAltBrush}" Margin="0,0,0,16"/>
 
                         <!-- 操作按鈕群 -->
                         <WrapPanel x:Name="ActionButtonsPanel">
@@ -177,7 +177,7 @@
                                                        FontSize="12" Foreground="#607D8B"
                                                        Margin="0,0,0,2"/>
                                             <TextBlock Text="{Binding Value}"
-                                                       FontSize="15" Foreground="#F0F4F8"
+                                                       FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}"
                                                        TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </DataTemplate>

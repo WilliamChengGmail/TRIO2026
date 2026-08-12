@@ -78,7 +78,7 @@
                 Padding="16,12,16,16"
                 Margin="0">
             <Border.Background>
-                <SolidColorBrush Color="#2A3A5C" Opacity="0.98" />
+                <SolidColorBrush Color="{DynamicResource CardBackgroundAlt}" Opacity="0.98" />
             </Border.Background>
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="30" ShadowDepth="-2" Opacity="0.5" />
@@ -96,10 +96,10 @@
                     <TextBlock x:Name="TitleText" Grid.Column="0"
                                Text="{Binding [TouchKeyboard.TitleAccount], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="18" FontWeight="SemiBold"
-                               Foreground="#B0BEC5"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                VerticalAlignment="Center" Margin="8,0" />
                     <!-- 輸入顯示區 -->
-                    <Border Grid.Column="1" Background="#1E2D45" CornerRadius="8"
+                    <Border Grid.Column="1" Background="{DynamicResource OverlayBackgroundBrush}" CornerRadius="8"
                             Height="44" Margin="8,0" Padding="12,0"
                             BorderBrush="#4A6A9A" BorderThickness="1"
                             ClipToBounds="True">
@@ -111,7 +111,7 @@
                             <TextBlock x:Name="InputDisplay" Grid.Column="0"
                                        Text="" FontSize="20" FontWeight="SemiBold"
                                        FontFamily="Consolas"
-                                       Foreground="#F0F4F8"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis" />
                             <Button x:Name="EyeToggle" Grid.Column="1"

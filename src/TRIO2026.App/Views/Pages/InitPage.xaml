@@ -3,10 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <UserControl.Resources>
-        <Color x:Key="PrimaryBlue">#42A5F5</Color>
-        <Color x:Key="AccentTeal">#26C6DA</Color>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F0F4F8" />
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B0BEC5" />
 
         <Storyboard x:Key="SpinAnimation" RepeatBehavior="Forever">
             <DoubleAnimation
@@ -37,7 +33,7 @@
                  Margin="-150,-100,0,0" Opacity="0.04">
             <Ellipse.Fill>
                 <RadialGradientBrush>
-                    <GradientStop Color="#42A5F5" Offset="0" />
+                    <GradientStop Color="{DynamicResource PrimaryBlue}" Offset="0" />
                     <GradientStop Color="Transparent" Offset="1" />
                 </RadialGradientBrush>
             </Ellipse.Fill>
@@ -48,7 +44,7 @@
                  Margin="0,0,-180,-120" Opacity="0.03">
             <Ellipse.Fill>
                 <RadialGradientBrush>
-                    <GradientStop Color="#26C6DA" Offset="0" />
+                    <GradientStop Color="{DynamicResource AccentTeal}" Offset="0" />
                     <GradientStop Color="Transparent" Offset="1" />
                 </RadialGradientBrush>
             </Ellipse.Fill>
@@ -67,7 +63,7 @@
             </TextBlock>
 
             <TextBlock Text="2026" FontSize="36" FontWeight="Light" FontFamily="Segoe UI"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center" Margin="0,-8,0,0" />
 
             <TextBlock Text="Molecular Diagnostics Platform"
@@ -77,8 +73,8 @@
 
             <!-- 旋轉進度環 -->
             <Canvas Width="60" Height="60" HorizontalAlignment="Center" Margin="0,0,0,30">
-                <Ellipse Width="60" Height="60" Stroke="#1E3A5F" StrokeThickness="3" />
-                <Path Stroke="{StaticResource TextPrimaryBrush}" StrokeThickness="3"
+                <Ellipse Width="60" Height="60" Stroke="{DynamicResource ControlPressedBrush}" StrokeThickness="3" />
+                <Path Stroke="{DynamicResource TextPrimaryBrush}" StrokeThickness="3"
                       StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                       Data="M 30,3 A 27,27 0 0 1 57,30"
                       RenderTransformOrigin="0.5,0.5">
@@ -90,12 +86,12 @@
 
             <TextBlock x:Name="StatusText" Text="System Initializing..."
                        FontSize="18" FontFamily="Segoe UI"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center" Margin="0,0,0,16" />
 
             <TextBlock x:Name="CountdownText" Text="10"
                        FontSize="28" FontWeight="SemiBold" FontFamily="Segoe UI"
-                       Foreground="{StaticResource TextPrimaryBrush}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
                        HorizontalAlignment="Center" />
         </StackPanel>
 

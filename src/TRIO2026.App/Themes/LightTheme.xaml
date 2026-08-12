@@ -1,0 +1,84 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 基礎色票 (Colors) - 暖色淺色系 -->
+    <!-- 背景類 -->
+    <Color x:Key="AppBackground">#FDFBF7</Color>
+    <Color x:Key="PanelBackground">#F5F2EB</Color>
+    <Color x:Key="CardBackground">#FFFFFF</Color>
+    <Color x:Key="CardBackgroundAlt">#F8F6F2</Color>
+    <Color x:Key="OverlayBackground">#99E6E2D9</Color>
+
+    <!-- 文字類 -->
+    <Color x:Key="TextPrimary">#3E3A39</Color>
+    <Color x:Key="TextSecondary">#7A7571</Color>
+    <Color x:Key="TextMuted">#A09C98</Color>
+    <Color x:Key="TextInverse">#FFFFFF</Color>
+
+    <!-- 主色與輔助色 -->
+    <Color x:Key="PrimaryBlue">#1976D2</Color>
+    <Color x:Key="PrimaryBlueHover">#1565C0</Color>
+    <Color x:Key="AccentTeal">#00838F</Color>
+    
+    <!-- 狀態色 -->
+    <Color x:Key="ErrorRed">#D32F2F</Color>
+    <Color x:Key="StopRed">#C62828</Color>
+    <Color x:Key="SuccessGreen">#2E7D32</Color>
+    <Color x:Key="WarningYellow">#F57F17</Color>
+
+    <!-- 邊框與分隔線 -->
+    <Color x:Key="BorderLight">#E6E2D9</Color>
+    <Color x:Key="BorderDark">#D3CEC4</Color>
+
+    <!-- UI 狀態回饋 (按鈕等) -->
+    <Color x:Key="ControlHover">#E8E3DA</Color>
+    <Color x:Key="ControlPressed">#DED9CF</Color>
+    
+    <!-- 漸層/特效專用 -->
+    <Color x:Key="SplashGradient1">#FDFBF7</Color>
+    <Color x:Key="SplashGradient2">#F5F2EB</Color>
+    <Color x:Key="SplashGradient3">#E6E2D9</Color>
+    <Color x:Key="UvGradientStart">#8C9EFF</Color>
+    <Color x:Key="UvGradientEnd">#536DFE</Color>
+
+
+    <!-- 筆刷 (Brushes) 對應上述 Color -->
+    <!-- 背景類筆刷 -->
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackground}" />
+    <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackground}" />
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackground}" />
+    <SolidColorBrush x:Key="CardBackgroundAltBrush" Color="{StaticResource CardBackgroundAlt}" />
+    <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="{StaticResource OverlayBackground}" />
+
+    <!-- 文字類筆刷 -->
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}" />
+    <SolidColorBrush x:Key="TextInverseBrush" Color="{StaticResource TextInverse}" />
+
+    <!-- 狀態與主色筆刷 -->
+    <SolidColorBrush x:Key="PrimaryBlueBrush" Color="{StaticResource PrimaryBlue}" />
+    <SolidColorBrush x:Key="PrimaryBlueHoverBrush" Color="{StaticResource PrimaryBlueHover}" />
+    <SolidColorBrush x:Key="AccentTealBrush" Color="{StaticResource AccentTeal}" />
+    <SolidColorBrush x:Key="ErrorRedBrush" Color="{StaticResource ErrorRed}" />
+    <SolidColorBrush x:Key="StopRedBrush" Color="{StaticResource StopRed}" />
+    <SolidColorBrush x:Key="SuccessGreenBrush" Color="{StaticResource SuccessGreen}" />
+    
+    <!-- 邊框與控制項筆刷 -->
+    <SolidColorBrush x:Key="BorderLightBrush" Color="{StaticResource BorderLight}" />
+    <SolidColorBrush x:Key="BorderDarkBrush" Color="{StaticResource BorderDark}" />
+    <SolidColorBrush x:Key="ControlHoverBrush" Color="{StaticResource ControlHover}" />
+    
+    <!-- 原本某些元件直接使用的特定名稱為了相容可以保留 -->
+    <Color x:Key="CardBg">#FFFFFF</Color>
+    <SolidColorBrush x:Key="CardBgBrush" Color="{StaticResource CardBg}" />
+
+    <!-- Splash 專用色彩與筆刷 (淺色系) -->
+    <Color x:Key="SplashLogoColor">#1976D2</Color>
+    <SolidColorBrush x:Key="SplashLogoBrush" Color="{StaticResource SplashLogoColor}" />
+    <SolidColorBrush x:Key="SplashTextBrush" Color="#7A7571" />
+    <SolidColorBrush x:Key="SplashLineBrush" Color="#00838F" />
+    <SolidColorBrush x:Key="SplashSpinnerBrush" Color="#1976D2" />
+    <SolidColorBrush x:Key="SplashStatusBrush" Color="#7A7571" />
+    <SolidColorBrush x:Key="SplashCopyrightBrush" Color="#A09C98" />
+</ResourceDictionary>

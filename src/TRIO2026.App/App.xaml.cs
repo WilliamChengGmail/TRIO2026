@@ -89,6 +89,38 @@ public partial class App : Application
         // ── 提前解析模擬器參數 ──
         var simArgs = ParseSimulationArgs(e.Args);
 
+        // ── 透過極速直連 SQLite 預先查出上一次的主題設定，確保啟動畫面第一秒即顯示正確主題 ──
+        string preloadedTheme = "Dark"; // 預設為深色
+        try
+        {
+            var baseDir = FindProjectRoot();
+            var dbPath = Path.Combine(baseDir, "Database", "system_config.db");
+            if (File.Exists(dbPath))
+            {
+                using var conn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath}");
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT Value FROM SystemSettings WHERE Category = 'UI' AND Key = 'Theme' LIMIT 1";
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    preloadedTheme = result.ToString() ?? "Dark";
+                }
+            }
+        }
+        catch { }
+
+        // ── 預載查出的佈景主題 ──
+        string preThemeUri = preloadedTheme == "Light" 
+            ? "Themes/LightTheme.xaml" 
+            : "Themes/DarkTheme.xaml";
+        try
+        {
+            var defaultTheme = new ResourceDictionary { Source = new Uri(preThemeUri, UriKind.Relative) };
+            Application.Current.Resources.MergedDictionaries.Add(defaultTheme);
+        }
+        catch { }
+
         // ── 立即顯示 SplashWindow（消除初始化期間的黑畫面）──
         var splashWindow = new SplashWindow();
         var splashStartTime = DateTime.UtcNow;
@@ -209,6 +241,23 @@ public partial class App : Application
             // 載入系統設定（system_config.db）
             var sysSettings = _serviceProvider.GetRequiredService<SystemSettingService>();
             sysSettings.LoadAsync().GetAwaiter().GetResult();
+
+            // 套用 UI 佈景主題
+            string themeName = sysSettings.UITheme;
+            string themeUri = themeName == "Light" 
+                ? "Themes/LightTheme.xaml" 
+                : "Themes/DarkTheme.xaml";
+            try
+            {
+                var resourceDict = new ResourceDictionary { Source = new Uri(themeUri, UriKind.Relative) };
+                // 清除之前的預載主題，避免重複或衝突
+                Application.Current.Resources.MergedDictionaries.Clear();
+                Application.Current.Resources.MergedDictionaries.Add(resourceDict);
+            }
+            catch (Exception ex)
+            {
+                startupLog.Error("App", $"載入佈景主題 {themeUri} 失敗", ex);
+            }
 
             // 確保 Installation UUID 已產生（首次啟動自動產生 + 硬體/OS 快照，後續僅讀取）
             var installUuid = InstallationUuidService.EnsureUuid(sysSettings);

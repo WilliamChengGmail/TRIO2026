@@ -5,11 +5,7 @@
              xmlns:svc="clr-namespace:TRIO2026.App.Services">
 
     <UserControl.Resources>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F0F4F8" />
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B0BEC5" />
         <SolidColorBrush x:Key="SectionHeaderBg" Color="#1A2D4C" />
-        <SolidColorBrush x:Key="CardBgBrush" Color="#1E2D4A" />
-        <SolidColorBrush x:Key="DividerBrush" Color="#1E3050" />
 
         <!-- 摺疊 Section 按鈕（無 hover，觸控 56px 高） -->
         <Style x:Key="SectionHeaderButton" TargetType="Button">
@@ -24,7 +20,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#2A4570" />
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlHoverBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -36,11 +32,11 @@
         <Style x:Key="BackButton" TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FontSize" Value="24" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="#1E2D4A" CornerRadius="10"
+                        <Border x:Name="Bd" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10"
                                 Padding="14,8" MinWidth="56" MinHeight="56">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
@@ -67,8 +63,8 @@
                                 Margin="16,8" MinHeight="56">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#42A5F5" Offset="0" />
-                                    <GradientStop Color="#26C6DA" Offset="1" />
+                                    <GradientStop Color="{DynamicResource PrimaryBlue}" Offset="0" />
+                                    <GradientStop Color="{DynamicResource AccentTeal}" Offset="1" />
                                 </LinearGradientBrush>
                             </Border.Background>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -107,10 +103,10 @@
                     <TextBlock x:Name="TxtTitle"
                                Text="{Binding [Data.DetailTitle], Source={x:Static svc:LocalizationService.Instance}}"
                                FontSize="22" FontWeight="Bold" FontFamily="Segoe UI"
-                               Foreground="{StaticResource TextPrimaryBrush}" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
                     <TextBlock x:Name="TxtRunId"
                                FontSize="14" FontFamily="Consolas"
-                               Foreground="{StaticResource TextSecondaryBrush}" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -134,7 +130,7 @@
                            Foreground="#546E7A" VerticalAlignment="Center" HorizontalAlignment="Left" />
                 <TextBlock x:Name="CountdownText"
                            FontSize="13" FontFamily="Segoe UI"
-                           Foreground="#26C6DA" VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentTealBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"
                            Visibility="Collapsed" />
             </Grid>
         </Border>

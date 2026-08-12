@@ -7,16 +7,16 @@
         WindowStyle="None"
         WindowState="Maximized"
         ResizeMode="NoResize"
-        Background="#0F1B2D">
+        Background="{DynamicResource AppBackgroundBrush}">
 
     <!-- Viewbox 等比縮放：以 600×960 為設計基準 -->
     <Viewbox Stretch="Uniform" StretchDirection="Both">
         <Border Width="600" Height="960">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
-                    <GradientStop Color="#0F1B2D" Offset="0" />
-                    <GradientStop Color="#1A2744" Offset="0.5" />
-                    <GradientStop Color="#0D2137" Offset="1" />
+                    <GradientStop Color="{DynamicResource SplashGradient1}" Offset="0" />
+                    <GradientStop Color="{DynamicResource SplashGradient2}" Offset="0.5" />
+                    <GradientStop Color="{DynamicResource SplashGradient3}" Offset="1" />
                 </LinearGradientBrush>
             </Border.Background>
 

@@ -684,6 +684,18 @@ public static class SystemSettingSeed
                 Description = "清單頁版面配置（card=卡片模式, compact=緊湊列表, table=表格模式）",
                 Remark = "✅ 已實作 — DataListPage 讀取此值決定版面"
             },
+            // ══════════════════════════════════════
+            // UI — 介面設定
+            // ══════════════════════════════════════
+            new()
+            {
+                Id = 52,
+                Category = "UI",
+                Key = "Theme",
+                Value = "Dark",
+                Description = "使用者介面佈景主題（Dark=深色, Light=暖色淺色）",
+                Remark = "✅ 已實作 — App.xaml.cs 根據此值動態載入對應的 Theme Dictionary"
+            },
         };
     }
 }

@@ -5,8 +5,6 @@
              x:Name="UserMenuRoot">
 
     <UserControl.Resources>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F0F4F8"/>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B0BEC5"/>
     </UserControl.Resources>
 
     <Grid>
@@ -24,11 +22,11 @@
             <StackPanel VerticalAlignment="Center">
                 <TextBlock x:Name="UserNameText" Text=""
                            FontSize="16" FontWeight="SemiBold"
-                           Foreground="{StaticResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            MaxWidth="240" TextTrimming="CharacterEllipsis" />
                 <TextBlock x:Name="UserRoleText" Text=""
                            FontSize="13"
-                           Foreground="{StaticResource TextSecondaryBrush}" />
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
         </StackPanel>
 
@@ -36,8 +34,8 @@
         <Grid x:Name="UserMenuOverlay" Visibility="Collapsed"
               Background="#01000000" MouseLeftButtonUp="OnOverlayClick"
               MouseMove="OnOverlayMouseMove">
-            <Border Background="#1E2D4A" CornerRadius="14"
-                    BorderBrush="#2A3D5E" BorderThickness="1"
+            <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="14"
+                    BorderBrush="{DynamicResource CardBackgroundAltBrush}" BorderThickness="1"
                     Padding="10" MinWidth="260"
                     HorizontalAlignment="Right" VerticalAlignment="Top"
                     Margin="0,80,20,0">
@@ -57,7 +55,7 @@
                                                    Margin="0,0,12,0"/>
                                         <TextBlock Text="{Binding [UserMenu.Home], Source={x:Static svc:LocalizationService.Instance}}"
                                                    FontSize="17"
-                                                   Foreground="#F0F4F8" VerticalAlignment="Center"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -72,7 +70,7 @@
                         </Button.Template>
                     </Button>
                     <!-- HOME 分隔線 -->
-                    <Border x:Name="HomeSeparator" Height="1" Background="#2A3D5E" Margin="8,4"/>
+                    <Border x:Name="HomeSeparator" Height="1" Background="{DynamicResource CardBackgroundAltBrush}" Margin="8,4"/>
                     <!-- Service Mode 切換（僅免登入模式可見） -->
                     <Button x:Name="BtnServiceMode" Click="OnServiceModeClick" Cursor="Hand"
                             Visibility="Collapsed">
@@ -85,7 +83,7 @@
                                                    Margin="0,0,12,0"/>
                                         <TextBlock Text="{Binding [UserMenu.ServiceMode], Source={x:Static svc:LocalizationService.Instance}}"
                                                    FontSize="17"
-                                                   Foreground="#F0F4F8" VerticalAlignment="Center"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -96,7 +94,7 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
-                    <Border x:Name="ServiceModeSeparator" Height="1" Background="#2A3D5E" Margin="8,4"
+                    <Border x:Name="ServiceModeSeparator" Height="1" Background="{DynamicResource CardBackgroundAltBrush}" Margin="8,4"
                             Visibility="Collapsed"/>
                     <!-- 變更密碼（僅登入模式可見） -->
                     <Button x:Name="BtnChangePassword" Click="OnChangePasswordClick" Cursor="Hand"
@@ -110,7 +108,7 @@
                                                    Margin="0,0,12,0"/>
                                         <TextBlock Text="{Binding [UserMenu.ChangePassword], Source={x:Static svc:LocalizationService.Instance}}"
                                                    FontSize="17"
-                                                   Foreground="#F0F4F8" VerticalAlignment="Center"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -121,7 +119,7 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
-                    <Border x:Name="ChangePasswordSeparator" Height="1" Background="#2A3D5E" Margin="8,4"
+                    <Border x:Name="ChangePasswordSeparator" Height="1" Background="{DynamicResource CardBackgroundAltBrush}" Margin="8,4"
                             Visibility="Collapsed"/>
                     <!-- 帳號管理（僅 Admin 登入模式可見） -->
                     <Button x:Name="BtnAccountMgmt" Click="OnAccountMgmtClick" Cursor="Hand"
@@ -135,7 +133,7 @@
                                                    Margin="0,0,12,0"/>
                                         <TextBlock Text="{Binding [UserMenu.AccountMgmt], Source={x:Static svc:LocalizationService.Instance}}"
                                                    FontSize="17"
-                                                   Foreground="#F0F4F8" VerticalAlignment="Center"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -146,7 +144,7 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
-                    <Border x:Name="AccountMgmtSeparator" Height="1" Background="#2A3D5E" Margin="8,4"
+                    <Border x:Name="AccountMgmtSeparator" Height="1" Background="{DynamicResource CardBackgroundAltBrush}" Margin="8,4"
                             Visibility="Collapsed"/>
                     <!-- 切換語系 -->
                     <Button x:Name="BtnSwitchLanguage" Click="OnSwitchLanguageClick" Cursor="Hand">
@@ -159,7 +157,7 @@
                                                    Margin="0,0,12,0"/>
                                         <TextBlock Text="{Binding [UserMenu.SwitchLanguage], Source={x:Static svc:LocalizationService.Instance}}"
                                                    FontSize="17"
-                                                   Foreground="#F0F4F8" VerticalAlignment="Center"/>
+                                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -171,7 +169,7 @@
                         </Button.Template>
                     </Button>
                     <!-- 語系分隔線 -->
-                    <Border x:Name="LangSeparator" Height="1" Background="#2A3D5E" Margin="8,4"/>
+                    <Border x:Name="LangSeparator" Height="1" Background="{DynamicResource CardBackgroundAltBrush}" Margin="8,4"/>
                     <!-- 登出/關閉按鈕 -->
                     <Button x:Name="BtnLogout" Click="OnLogoutOrCloseClick" Cursor="Hand"
                             Tag="{Binding [UserMenu.Logout], Source={x:Static svc:LocalizationService.Instance}}">
@@ -183,7 +181,7 @@
                                         <TextBlock Text="🚪" FontSize="22"
                                                    VerticalAlignment="Center" Margin="0,0,12,0"/>
                                         <TextBlock Text="{TemplateBinding Tag}"
-                                                   FontSize="17" Foreground="#F0F4F8"
+                                                   FontSize="17" Foreground="{DynamicResource TextPrimaryBrush}"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
@@ -203,8 +201,8 @@
         <Grid x:Name="LanguageOverlay" Visibility="Collapsed"
               Background="#01000000" MouseLeftButtonUp="OnOverlayClick"
               MouseMove="OnOverlayMouseMove">
-            <Border Background="#1E2D4A" CornerRadius="14"
-                    BorderBrush="#2A3D5E" BorderThickness="1"
+            <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="14"
+                    BorderBrush="{DynamicResource CardBackgroundAltBrush}" BorderThickness="1"
                     Padding="10" MinWidth="260"
                     HorizontalAlignment="Right" VerticalAlignment="Top"
                     Margin="0,80,20,0">
@@ -218,7 +216,7 @@
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd" Background="Transparent"
                                         CornerRadius="8" Padding="20,16">
-                                    <TextBlock Text="🇺🇸  English" FontSize="17" Foreground="#F0F4F8"/>
+                                    <TextBlock Text="🇺🇸  English" FontSize="17" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsPressed" Value="True">
@@ -233,7 +231,7 @@
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd" Background="Transparent"
                                         CornerRadius="8" Padding="20,16">
-                                    <TextBlock Text="🇹🇼  繁體中文" FontSize="17" Foreground="#F0F4F8"/>
+                                    <TextBlock Text="🇹🇼  繁體中文" FontSize="17" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsPressed" Value="True">
@@ -248,7 +246,7 @@
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd" Background="Transparent"
                                         CornerRadius="8" Padding="20,16">
-                                    <TextBlock Text="🇨🇳  简体中文" FontSize="17" Foreground="#F0F4F8"/>
+                                    <TextBlock Text="🇨🇳  简体中文" FontSize="17" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsPressed" Value="True">
@@ -263,7 +261,7 @@
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd" Background="Transparent"
                                         CornerRadius="8" Padding="20,16">
-                                    <TextBlock Text="🇯🇵  日本語" FontSize="17" Foreground="#F0F4F8"/>
+                                    <TextBlock Text="🇯🇵  日本語" FontSize="17" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsPressed" Value="True">

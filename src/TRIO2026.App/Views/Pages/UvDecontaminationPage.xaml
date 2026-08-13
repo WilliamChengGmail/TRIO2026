@@ -136,9 +136,10 @@
                                         <DataTrigger.ExitActions>
                                             <BeginStoryboard>
                                                 <Storyboard>
+                                                    <!-- 將原先錯誤的 DynamicResource 替換為實際的靜態 Color 或是直接交由 Setter 恢復 -->
                                                     <ColorAnimation
                                                         Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
-                                                        To="{DynamicResource BorderDarkBrush}" Duration="0:0:0.3"/>
+                                                        To="#1E2A38" Duration="0:0:0.3"/>
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </DataTrigger.ExitActions>
